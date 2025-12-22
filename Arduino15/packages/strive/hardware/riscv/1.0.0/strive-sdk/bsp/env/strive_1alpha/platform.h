@@ -101,6 +101,9 @@
 
 // I2C definitions (3 I2C controllers)
 #define I2C_BASE_ADDR _AC(0x8000AD00,UL)
+#ifndef I2C1_BASE_ADDR
+#define I2C1_BASE_ADDR I2C_BASE_ADDR
+#endif
 #define I2C2_BASE_ADDR _AC(0x8000AE00,UL)
 #define I2C3_BASE_ADDR _AC(0x8000AF00,UL)
 

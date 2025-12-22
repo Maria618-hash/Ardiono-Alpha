@@ -34,7 +34,8 @@ uint8_t TwoWire::transmitting = 0;
 void (*TwoWire::user_onRequest)(void) = NULL;
 void (*TwoWire::user_onReceive)(int) = NULL;
 
-TwoWire::TwoWire()
+TwoWire::TwoWire(uintptr_t baseAddr)
+  : _baseAddr(baseAddr)
 {
 }
 
@@ -43,10 +44,10 @@ void TwoWire::begin(void)
   setClock(20000);
 
   // Reset Command Regsiter
-  I2C_CR_REG = 0;
+  I2C_CR_REG_BASE(_baseAddr) = 0;
 
   // Enable core
-  bitSet(I2C_CTR_REG, I2C_CTR_EN);
+  bitSet(I2C_CTR_REG_BASE(_baseAddr), I2C_CTR_EN);
 }
 
 void TwoWire::setClock(uint32_t frequency)
@@ -59,8 +60,8 @@ void TwoWire::setClock(uint32_t frequency)
   uint8_t highByte = (prescalerDivisor >> 8) & 0xFF;
 
   // Write the values to the I2C_PRERlo_REG and I2C_PRERhi_REG registers
-  I2C_PRERlo_REG = lowByte;
-  I2C_PRERhi_REG = highByte;
+  I2C_PRERlo_REG_BASE(_baseAddr) = lowByte;
+  I2C_PRERhi_REG_BASE(_baseAddr) = highByte;
 }
 
 void TwoWire::begin(uint8_t address)
@@ -71,18 +72,18 @@ void TwoWire::begin(uint8_t address)
 void TwoWire::beginTransmission(uint8_t address)
 {
   // txBuffer[0] = (address << 1);
-  I2C_TXR_REG = address << 1;
+  I2C_TXR_REG_BASE(_baseAddr) = address << 1;
 
   // UnSet first bit to send Write command
-  bitClear(I2C_TXR_REG, I2C_TXR_WR);
+  bitClear(I2C_TXR_REG_BASE(_baseAddr), I2C_TXR_WR);
 
-  I2C_CR_REG = 0x0;
-
-  // Set Start Bit
-  bitSet(I2C_CR_REG, I2C_CR_WR);
+  I2C_CR_REG_BASE(_baseAddr) = 0x0;
 
   // Set Start Bit
-  bitSet(I2C_CR_REG, I2C_CR_STA);
+  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_WR);
+
+  // Set Start Bit
+  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_STA);
 
   transferInProgress();
 
@@ -95,9 +96,9 @@ size_t TwoWire::write(uint8_t data)
   txBuffer[0] = data;
 
   // Copy Data to Transmit Register
-  I2C_TXR_REG = txBuffer[0];
+  I2C_TXR_REG_BASE(_baseAddr) = txBuffer[0];
 
-  I2C_CR_REG = 0x10;
+  I2C_CR_REG_BASE(_baseAddr) = 0x10;
 
   transferInProgress();
 
@@ -138,13 +139,13 @@ void TwoWire::flush(void)
 
 uint8_t TwoWire::endTransmission(uint8_t sendStop)
 {
-  I2C_CR_REG =0x0;
+  I2C_CR_REG_BASE(_baseAddr) = 0x0;
 
   // Set Stop Bit
-  bitSet(I2C_CR_REG, I2C_CR_STO);
+  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_STO);
 
   // Set Stop Bit
-  bitSet(I2C_CR_REG, I2C_CR_WR);
+  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_WR);
 
   transferInProgress();
   return 1;
@@ -152,45 +153,45 @@ uint8_t TwoWire::endTransmission(uint8_t sendStop)
 
 void TwoWire::transferInProgress()
 {
-  while (bitRead(I2C_SR_REG, I2C_SR_TIP) == 0)
+  while (bitRead(I2C_SR_REG_BASE(_baseAddr), I2C_SR_TIP) == 0)
     ;
-  while (bitRead(I2C_SR_REG, I2C_SR_TIP) == 1)
+  while (bitRead(I2C_SR_REG_BASE(_baseAddr), I2C_SR_TIP) == 1)
     ;
 }
 
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t length, uint8_t sendStop)
 {
   // Address Set
-  I2C_TXR_REG = address << 1;
+  I2C_TXR_REG_BASE(_baseAddr) = address << 1;
 
   // Set first bit to send Read command
-  bitSet(I2C_TXR_REG, I2C_TXR_WR);
+  bitSet(I2C_TXR_REG_BASE(_baseAddr), I2C_TXR_WR);
 
   // I2C_TXR_REG = 0x91;
-  I2C_CR_REG = 0x00;
+  I2C_CR_REG_BASE(_baseAddr) = 0x00;
 
   // Set Write Bit
-  bitSet(I2C_CR_REG, I2C_CR_WR);
+  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_WR);
 
   // Set Start Bit
-  bitSet(I2C_CR_REG, I2C_CR_STA);
+  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_STA);
 
   transferInProgress();
   rxBufferIndex = 0;
   while (rxBufferIndex < length)
   {
     // Reset Command Reg
-    I2C_CR_REG = 0x0;
+    I2C_CR_REG_BASE(_baseAddr) = 0x0;
 
     // Set Read from Slave Bit
-    bitSet(I2C_CR_REG, I2C_CR_RD);
+    bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_RD);
 
     transferInProgress();
-    rxBuffer[rxBufferIndex++] = I2C_RXR_REG;
+    rxBuffer[rxBufferIndex++] = I2C_RXR_REG_BASE(_baseAddr);
   }
 
-  I2C_CR_REG = 0x68;
-  Wire.transferInProgress();
+  I2C_CR_REG_BASE(_baseAddr) = 0x68;
+  transferInProgress();
 
   return rxBufferIndex;
 }
@@ -274,5 +275,10 @@ void TwoWire::onRequest(void (*function)(void))
   user_onRequest = function;
 }
 
-// TwoWire Wire = TwoWire();
-TwoWire Wire;
+TwoWire Wire((uintptr_t)I2C_BASE_ADDR);
+#if defined(I2C2_BASE_ADDR)
+TwoWire Wire1((uintptr_t)I2C2_BASE_ADDR);
+#endif
+#if defined(I2C3_BASE_ADDR)
+TwoWire Wire2((uintptr_t)I2C3_BASE_ADDR);
+#endif

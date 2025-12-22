@@ -33,6 +33,8 @@ extern "C" void i2c0_isr(void);
 class TwoWire : public Stream
 {
   private:
+    uintptr_t _baseAddr;
+
     static uint8_t rxBuffer[];
     static uint8_t rxBufferIndex;
     static uint8_t rxBufferLength;
@@ -51,7 +53,7 @@ class TwoWire : public Stream
     friend void i2c0_isr(void);
 
   public:
-    TwoWire();
+    explicit TwoWire(uintptr_t baseAddr = (uintptr_t)I2C_BASE_ADDR);
     void transferInProgress();
     void begin();
     void begin(uint8_t);
@@ -82,6 +84,12 @@ class TwoWire : public Stream
 };
 
 extern TwoWire Wire;
+#if defined(I2C2_BASE_ADDR)
+extern TwoWire Wire1;
+#endif
+#if defined(I2C3_BASE_ADDR)
+extern TwoWire Wire2;
+#endif
 
 #endif
 
