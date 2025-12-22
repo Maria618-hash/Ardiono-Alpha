@@ -1,0 +1,11 @@
+prefix=/tmp/openocd-chipsalliance-built-windows
+exec_prefix=/tmp/openocd-chipsalliance-built-windows/bin
+libdir=/tmp/openocd-chipsalliance-built-windows/bin
+includedir=/tmp/openocd-chipsalliance-built-windows/include/libftdi1
+
+Name: libftdi1
+Description: Library to program and control the FTDI USB controller
+Requires: libusb-1.0
+Version: 1.5
+Libs: -L${libdir} -lftdi1
+Cflags: -I${includedir}

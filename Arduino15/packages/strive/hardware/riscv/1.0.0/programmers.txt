@@ -1,0 +1,7 @@
+openocd.name=Strive Olimex
+openocd.communication=usb
+openocd.program.params.verbose=-v
+openocd.program.params.quiet=-q
+openocd.program.tool=openocd
+openocd.program.tool.windows=openocd
+

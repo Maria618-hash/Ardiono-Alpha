@@ -1,0 +1,11 @@
+prefix=/tmp/openocd-chipsalliance-built-windows
+exec_prefix=/tmp/openocd-chipsalliance-built-windows/bin
+libdir=/tmp/openocd-chipsalliance-built-windows/bin
+includedir=/tmp/openocd-chipsalliance-built-windows/include/libftdi1
+
+Name: libftdipp1
+Description: C++ wrapper for libftdi1
+Requires: libftdi1
+Version: 1.5
+Libs: -L${libdir} -lftdipp1
+Cflags: -I${includedir}

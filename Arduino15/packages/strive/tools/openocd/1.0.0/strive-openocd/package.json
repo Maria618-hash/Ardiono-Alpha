@@ -1,0 +1,22 @@
+{
+  "name": "tool-openocd-riscv-chipsalliance",
+  "version": "1.1100.211104+sha.857b5cec1b",
+  "description": "Fork of Open On-Chip Debugger that has RISC-V support and enabled VPI JTAG",
+  "keywords": [
+    "tools",
+    "debugger",
+    "debug server",
+    "uploader",
+    "risc-v"
+  ],
+  "homepage": "http://openocd.org",
+  "license": "GPL-2.0-or-later",
+  "system": [
+    "windows_amd64"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/riscv/riscv-openocd"
+  }
+}
+

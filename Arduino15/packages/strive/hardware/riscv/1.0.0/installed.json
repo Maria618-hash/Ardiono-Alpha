@@ -1,0 +1,91 @@
+{
+  "packages": [
+    {
+      "name": "strive",
+      "maintainer": "NECOP",
+      "websiteUrl": "https://github.com/vnomakhan",
+      "Url": "https://github.com/vnomakhan/STRIVE_TOOLS/raw/main/package_striveboards_indexV1.1.json",
+      "email": "taimurislamkhan@gmail.com",
+      "platforms": [
+        {
+          "name": "Strive Embedded Boards",
+          "architecture": "riscv",
+          "version": "1.0.0",
+          "deprecated": false,
+          "category": "Strive",
+          "url": "https://github.com/vnomakhan/STRIVE_TOOLS/raw/main/Strive_v_1_1.tar.bz2",
+          "archiveFileName": "Strive_v_1_1.tar.bz2",
+          "checksum": "SHA-256:1952e12ce140831343d951ccee4506bfe18ccb325993670443ee4a5acbe50dae",
+          "size": "4981926",
+          "boards": [
+            {
+              "name": "Strive-1"
+            },
+            {
+              "name": "Genysys FPGA"
+            }
+          ],
+          "help": {},
+          "toolsDependencies": [
+            {
+              "packager": "strive",
+              "name": "riscv32-unknown-elf-gcc",
+              "version": "1.0.0"
+            },
+            {
+              "packager": "strive",
+              "name": "openocd",
+              "version": "1.0.0"
+            }
+          ],
+          "discoveryDependencies": [],
+          "monitorDependencies": []
+        }
+      ],
+      "tools": [
+        {
+          "name": "riscv32-unknown-elf-gcc",
+          "version": "1.0.0",
+          "systems": [
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://dl.dropboxusercontent.com/scl/fi/01wyw3zqr6eob7v29qhn7/riscv32-unknown-elf-gcc-linux64-main.tar.bz2?rlkey=brit85ku0iuezku1853ys6slh\u0026dl=0",
+              "archiveFileName": "riscv32-unknown-elf-gcc-linux64-main.tar.bz2",
+              "size": "442526245",
+              "checksum": "SHA-256:e3625b5d614cc93abe52b4bcbb213be74e41452484e9fe260b34f54328800b9b"
+            },
+            {
+              "host": "x86_64-mingw32",
+              "url": "http://dl.dropboxusercontent.com/scl/fi/jtvrx5a7vsl4zqq3fkbsp/riscv32-unknown-elf-gcc-windowsx86_64.zip?rlkey=p63hy13asamp3p56is24064el\u0026dl=0",
+              "archiveFileName": "riscv32-unknown-elf-gcc-windowsx86_64.zip",
+              "size": "232604289",
+              "checksum": "SHA-256:bef1c1c3be077331e38746e974fc5b20600f44757ee418adbb7fbee5a1e5bb50"
+            }
+          ]
+        },
+        {
+          "name": "openocd",
+          "version": "1.0.0",
+          "systems": [
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://github.com/vnomakhan/STRIVE_TOOLS/raw/main/openocd_linux86_64.tar.bz2",
+              "archiveFileName": "openocd_linux86_64.tar.bz2",
+              "size": "2378119",
+              "checksum": "SHA-256:f0a4c6da3ad9640324f03ada248c0f8c39d4d1e6d59e96b9ef5dac2b547cd6a6"
+            },
+            {
+              "host": "x86_64-mingw32",
+              "url": "http://dl.dropboxusercontent.com/scl/fi/fp2pzprt9uk1eczsbygx0/openocd-windows.zip?rlkey=i536k4wrd7o1x6re4c78nqqsj\u0026dl=0",
+              "archiveFileName": "openocd-windows.zip",
+              "size": "3556136",
+              "checksum": "SHA-256:b888779dd1a74fe9d1b5e5fdd24ec1a38024f527215308414c54893d5d3d47b7"
+            }
+          ]
+        }
+      ],
+      "help": {}
+    }
+  ],
+  "IsTrusted": false
+}

@@ -1,0 +1,98 @@
+# For Strive 1, allow Clock Frequency selection
+
+menu.clksrc=CPU Clock Frequency
+menu.toolsloc=Tool Install Location
+
+strive_1.name=Strive 1
+
+strive_1.menu.toolsloc.default=Default
+strive_1.menu.toolsloc.manual=Manual
+strive_1.menu.toolsloc.default.compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
+strive_1.menu.toolsloc.manual.compiler.path=
+
+#Point to the file for ./variants/<variant>/pins_arduino.h
+strive_1.build.variant=standard
+strive_1.menu.clksrc=Clock Source
+strive_1.menu.clksrc.fpga=80MHz Crystal Clock
+strive_1.menu.clksrc.fpga.build.f_cpu=80000000L
+
+strive_1.menu.clksrc.fpga40=40MHz Crystal Clock
+strive_1.menu.clksrc.fpga40.build.f_cpu=40000000L
+
+
+strive_1.build.mcu=rv32imac
+
+#"The 'core' file directory for this board, in ./cores
+strive_1.build.core=arduino
+# This sets a define for use in the compiled code.
+strive_1.build.board=Strive_1
+strive_1.build.boardenv=strive-1
+strive_1.build.sdata.size=4096
+strive_1.program.disableDTR=true
+strive_1.upload.disableDTR=true
+
+#This selects the tool from "programmers.txt"
+strive_1.program.tool=openocd
+strive_1.program.default=openocd
+strive_1.upload.tool=openocd
+strive_1.upload.protocol=openocd
+strive_1.upload.tool.default=openocd
+
+# Limit is the 128MB Flash. Assume half is used for something else.
+strive_1.upload.maximum_size=64000
+strive_1.build.ldscript={compiler.sdk.path}/env/strive-1/link.lds
+strive_1.build.openocdcfg=fpga.cfg
+strive_1.bootloader.tool=openocd
+strive_1.build.extra_flags=-DSTRIVE_1
+
+#####################################################################################################################################
+# For Strive 1aplha, allow Clock Frequency selection
+
+
+strive_1alpha.name=Strive_1alpha
+
+strive_1alpha.menu.toolsloc.default=Default
+strive_1alpha.menu.toolsloc.manual=Manual
+strive_1alpha.menu.toolsloc.default.compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
+strive_1alpha.menu.toolsloc.manual.compiler.path=
+
+#Point to the file for ./variants/<variant>/pins_arduino.h
+strive_1alpha.build.variant=strive_1alpha
+strive_1alpha.menu.clksrc=Clock Source
+
+strive_1alpha.menu.clksrc.fpga=80MHz Crystal Clock
+strive_1alpha.menu.clksrc.fpga.build.f_cpu=80000000L
+
+strive_1alpha.menu.clksrc.fpga40=40MHz Crystal Clock
+strive_1alpha.menu.clksrc.fpga40.build.f_cpu=40000000L
+
+strive_1alpha.build.mcu=rv32imac
+
+#"The 'core' file directory for this board, in ./cores
+strive_1alpha.build.core=arduino
+# This sets a define for use in the compiled code.
+strive_1alpha.build.board=strive_1alpha
+strive_1alpha.build.boardenv=strive_1alpha
+strive_1alpha.build.sdata.size=4096
+strive_1alpha.program.disableDTR=true
+strive_1alpha.upload.disableDTR=true
+
+#This selects the tool from "programmers.txt"
+strive_1alpha.program.tool=openocd
+strive_1alpha.program.default=openocd
+strive_1alpha.upload.tool=openocd
+strive_1alpha.upload.protocol=openocd
+strive_1alpha.upload.tool.default=openocd
+
+# Limit is the 128MB Flash. Assume half is used for something else.
+strive_1alpha.upload.maximum_size=64000
+strive_1alpha.build.ldscript={compiler.sdk.path}/env/strive_1alpha/link.lds
+strive_1alpha.build.openocdcfg=fpga.cfg
+strive_1alpha.bootloader.tool=openocd
+strive_1alpha.build.extra_flags=-DSTRIVE_1alpha
+
+
+# Strive 1 Alpha specific compiler flags (if needed)
+# strive-1alpha.build.extra_flags=-DSTRIVE_1ALPHA_SPECIFIC -DCUSTOM_FEATURE
+# strive-1alpha.compiler.c.extra_flags=-DSTRIVE_1ALPHA_OPTIMIZATION
+# strive-1alpha.compiler.cpp.extra_flags=-DSTRIVE_1ALPHA_OPTIMIZATION

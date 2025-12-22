@@ -1,0 +1,44 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+Remap	KEYWORD2
+
+######################################
+# Constants (LITERAL1)
+#######################################
+GPIO	LITERAL1
+SPI_CS	LITERAL1   
+SPI_MOSI	LITERAL1
+SPI_SCL	LITERAL1
+PWM1	LITERAL1
+PWM2	LITERAL1
+PWM_N_PTC4	LITERAL1
+PWM_P_PTC4	LITERAL1
+PWM_N_PTC3	LITERAL1
+PWM_P_PTC3	LITERAL1
+PWM_N_PTC2	LITERAL1
+PWM_P_PTC2	LITERAL1
+PWM_N_PTC1	LITERAL1
+PWM_P_PTC1	LITERAL1
+O_UART2_TX	LITERAL1
+
+SPI_MISO	LITERAL1 
+GATE_CLK_PAD_I3	LITERAL1
+GATE_CLK_PAD_I2	LITERAL1
+GATE_CLK_PAD_I	LITERAL1
+CAPT_PAD_I4	LITERAL1
+CAPT_PAD_I3	LITERAL1
+CAPT_PAD_I2	LITERAL1
+CAPT_PAD_I	LITERAL1
+EXT_INT3	LITERAL1
+EXT_INT2	LITERAL1
+EXT_INT	LITERAL1
+I_UART2_RX	LITERAL1

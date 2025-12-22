@@ -1,0 +1,106 @@
+name= Strive
+version=1.0.1
+
+# Compile variables
+# ----------------------
+
+compiler.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
+
+compiler.c.cmd=riscv64-unknown-elf-gcc
+compiler.cpp.cmd=riscv64-unknown-elf-g++
+compiler.ld.cmd=riscv64-unknown-elf-ld
+compiler.ar.cmd=riscv64-unknown-elf-ar
+compiler.objcopy.cmd=riscv64-unknown-elf-objcopy
+compiler.elf2hex.cmd=riscv64-unknown-elf-objcopy
+compiler.size.cmd=riscv64-unknown-elf-size
+
+compiler.sdk.path={runtime.platform.path}/strive-sdk/bsp
+compiler.preproc.flags=-I{build.system.path}/include -I{compiler.sdk.path}/include -I{compiler.sdk.path}/env -I{compiler.sdk.path}/drivers -I{compiler.sdk.path}/env/{build.boardenv}
+compiler.c.flags=-c -O2 -march={build.mcu} -mabi=ilp32 -fpeel-loops -ffunction-sections -fdata-sections -Wall {compiler.preproc.flags} -include sys/cdefs.h -g
+compiler.cpp.flags=-c -O2 -march={build.mcu} -mabi=ilp32 -fpeel-loops -ffunction-sections -fdata-sections -fpermissive -Wall -fno-rtti -fno-exceptions {compiler.preproc.flags} -include sys/cdefs.h -g
+compiler.ld.flags=-T {build.ldscript} -march={build.mcu} -mabi=ilp32 -nostartfiles -Wl,-N -Wl,--gc-sections -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=sbrk
+compiler.S.flags=-c -march={build.mcu} -mabi=ilp32 {compiler.preproc.flags} -g
+
+
+compiler.ar.flags=rcs
+compiler.objcopy.eep.flags=-O srec
+compiler.elf2hex.flags=-R .rel.dyn
+compiler.define=-DARDUINO=
+compiler.c.extra_flags=-DF_CPU={build.f_cpu}L -D{build.board}
+compiler.c.elf.extra_flags=
+compiler.cpp.extra_flags=-DF_CPU={build.f_cpu}L -D{build.board}
+compiler.S.extra_flags=-DF_CPU={build.f_cpu}L -D{build.board}
+compiler.ar.extra_flags=
+compiler.elf2hex.extra_flags=
+
+# Can be overridden in boards.txt
+build.extra_flags=
+
+# USB Flags
+# ---------
+build.usb_flags=
+build.openocdcfg=
+
+# Compile patterns
+# ---------------------
+
+## Compile S files
+recipe.S.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.S.flags} -DARDUINO={runtime.ide.version} {compiler.S.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile c files
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DARDUINO={runtime.ide.version} {compiler.c.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile c++ files
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DARDUINO={runtime.ide.version} {compiler.cpp.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Create archives
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{archive_file_path}" "{object_file}"
+
+## Link gc-sections, archives, and objects
+recipe.c.combine.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.ld.flags} {build.extra_flags} {object_files} -nostdlib -Wl,--start-group "{archive_file_path}" -lm -lc -lstdc++ -lgloss -Wl,--end-group -lgcc -o "{build.path}/{build.project_name}.elf"
+
+## Create binary
+recipe.objcopy.eep.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} -O binary "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+
+## Create hex
+recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} -O srec "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
+
+## Compute size
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -B "{build.path}/{build.project_name}.elf"
+recipe.size.regex=\s*[0-9]+\s+[0-9]+\s+[0-9]+\s+([0-9]+).*
+
+# Uploader tools
+# -------------------
+tools.openocd.path={runtime.platform.path}/strive-sdk/bsp
+tools.openocd.program.config={path}/env/{build.boardenv}/fpga.cfg
+tools.openocd.program.configBIT={path}/env/{build.boardenv}/fpga-bit.cfg
+tools.openocd.program.bitfilePath={path}/env/{build.boardenv}/bitstream.bit
+tools.openocd.program.program_file={build.path}/{build.project_name}.elf
+tools.openocd.cmd.linux=/env/{build.boardenv}/openocd_lsketch
+tools.openocd.cmd.windows=/env/{build.boardenv}/openocd_upload.bat
+tools.openocd.program.params.verbose=-v
+tools.openocd.program.params.quiet=-q
+tools.openocd.program.pattern.linux="{path}{cmd}" {program.program_file} {program.config} {program.configBIT} {program.bitfilePath} {runtime.tools.openocd.path}/bin/openocd
+tools.openocd.program.pattern.windows="{path}{cmd}" {program.program_file} {program.config} {program.configBIT} {program.bitfilePath} {runtime.tools.openocd.path}/bin/openocd.exe
+tools.openocd.upload.pattern.windows="{path}{cmd}" "{program.program_file}" "{program.config}" "{program.configBIT}" {program.bitfilePath} {runtime.tools.openocd.path}/bin/openocd.exe
+
+
+tools.openocd.erase.params.verbose=-d3
+tools.openocd.erase.params.quiet=-d0
+tools.openocd.erase.pattern=
+tools.openocd.bootloader.params.verbose=-d2
+tools.openocd.bootloader.params.quiet=-d0
+tools.openocd.bootloader.pattern="{path}{cmd}" "/home/eco/Documents/OpenPLC_Editor/editor/arduino/examples/Baremetal/build/sifive.riscv.strive_1/Baremetal.ino.elf" {program.config} {program.configBIT} {program.bitfilePath}
+
+
+# Debugger configuration (general options)
+# ----------------------------------------
+# EXPERIMENTAL feature:
+#  - this is alpha and may be subject to change without notice
+debug.executable={build.path}/{build.project_name}.elf
+debug.toolchain=gcc
+debug.toolchain.path={runtime.tools.riscv32-unknown-elf-gcc.path}/bin/
+debug.toolchain.prefix=riscv64-unknown-elf
+debug.server=openocd
+debug.server.openocd.path={runtime.tools.openocd-1.0.0.path}/bin/strive-openocd
+debug.server.openocd.script={runtime.platform.path}/variants/{build.variant}/strive_1.cfg

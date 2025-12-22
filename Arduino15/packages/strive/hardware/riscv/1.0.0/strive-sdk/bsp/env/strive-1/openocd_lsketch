@@ -1,0 +1,11 @@
+#! /bin/bash -x
+
+#Author : Taimur Islam Khan
+#date: 01 Nov, 2022
+
+
+# ${5} -c "set BITFILE ${4}" \
+# 	-f ${3} 
+${5} -f ${2} \
+	-c "reset halt;load_image ${1}; resume 0x0; exit" 
+

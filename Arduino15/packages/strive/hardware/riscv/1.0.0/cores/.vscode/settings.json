@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "wiring_constants.h": "c",
+        "atomic": "cpp",
+        "cstdint": "cpp"
+    }
+}
