@@ -71,19 +71,11 @@ void TwoWire::begin(uint8_t address)
 
 void TwoWire::beginTransmission(uint8_t address)
 {
-  // txBuffer[0] = (address << 1);
-  I2C_TXR_REG_BASE(_baseAddr) = address << 1;
+  // Address + write bit (0)
+  I2C_TXR_REG_BASE(_baseAddr) = (unsigned)(address << 1);
 
-  // UnSet first bit to send Write command
-  bitClear(I2C_TXR_REG_BASE(_baseAddr), I2C_TXR_WR);
-
-  I2C_CR_REG_BASE(_baseAddr) = 0x0;
-
-  // Set Start Bit
-  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_WR);
-
-  // Set Start Bit
-  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_STA);
+  // Issue START + WRITE in a single write (command bits may be self-clearing).
+  I2C_CR_REG_BASE(_baseAddr) = (1u << I2C_CR_WR) | (1u << I2C_CR_STA);
 
   transferInProgress();
 
@@ -139,13 +131,9 @@ void TwoWire::flush(void)
 
 uint8_t TwoWire::endTransmission(uint8_t sendStop)
 {
-  I2C_CR_REG_BASE(_baseAddr) = 0x0;
-
-  // Set Stop Bit
-  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_STO);
-
-  // Set Stop Bit
-  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_WR);
+  (void)sendStop;
+  // Issue STOP + WRITE in a single write.
+  I2C_CR_REG_BASE(_baseAddr) = (1u << I2C_CR_STO) | (1u << I2C_CR_WR);
 
   transferInProgress();
   return 1;
@@ -161,30 +149,20 @@ void TwoWire::transferInProgress()
 
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t length, uint8_t sendStop)
 {
-  // Address Set
-  I2C_TXR_REG_BASE(_baseAddr) = address << 1;
+  (void)sendStop;
+  // Address + read bit (1)
+  I2C_TXR_REG_BASE(_baseAddr) = (unsigned)((address << 1) | 1u);
 
-  // Set first bit to send Read command
-  bitSet(I2C_TXR_REG_BASE(_baseAddr), I2C_TXR_WR);
-
-  // I2C_TXR_REG = 0x91;
-  I2C_CR_REG_BASE(_baseAddr) = 0x00;
-
-  // Set Write Bit
-  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_WR);
-
-  // Set Start Bit
-  bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_STA);
+  // Issue START + WRITE (address phase) in a single write.
+  I2C_CR_REG_BASE(_baseAddr) = (1u << I2C_CR_WR) | (1u << I2C_CR_STA);
 
   transferInProgress();
   rxBufferIndex = 0;
   while (rxBufferIndex < length)
   {
     // Reset Command Reg
-    I2C_CR_REG_BASE(_baseAddr) = 0x0;
-
-    // Set Read from Slave Bit
-    bitSet(I2C_CR_REG_BASE(_baseAddr), I2C_CR_RD);
+    // Issue READ in a single write.
+    I2C_CR_REG_BASE(_baseAddr) = (1u << I2C_CR_RD);
 
     transferInProgress();
     rxBuffer[rxBufferIndex++] = I2C_RXR_REG_BASE(_baseAddr);
