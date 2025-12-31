@@ -1,0 +1,9 @@
+% Paper-ready Conclusion section (IEEE style).
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This work presented a hardware--software co-designed approach for securing embedded programming and execution under physical-access threat models. The proposed architecture gates \emph{both} normal execution and invasive debug access on a device-resident authorization decision, implemented through protected key storage and a verification datapath that is not exposed via ordinary memory transactions. Authorization is invoked through an ISA-visible primitive integrated into the toolchain, improving deployability and enabling reproducible, inspectable binaries.
+
+The evaluation demonstrated end-to-end feasibility using collected artifacts: (i) successful compilation and image generation with the custom instruction in the build flow, (ii) key exchange/matching evidence that precedes debug enablement, (iii) an operational host workflow supporting compilation, inspection, connection, and programming, and (iv) fail-stop behavior consistent with a halt-on-failure policy when authorization is not satisfied. Together, these results support the practicality of instruction-triggered, key-gated control as a foundation for restricting unauthorized reflashing and debugging in embedded systems.
+
