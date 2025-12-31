@@ -1,0 +1,58 @@
+% Paper-ready Discussion and Future Work section (IEEE style).
+% Drop this into your main IEEEtran document after the Results section.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Security Implications of Key-Gated Execution and Debug}
+The results demonstrate an end-to-end workflow in which both normal execution and debug capability are released only after a successful authorization event (i.e., a key match), and failure results in a fail-stop halt.
+This design choice directly targets a common embedded threat surface: once an attacker can reflash firmware or enable invasive debugging, higher-level protections can be bypassed.
+By keeping the reference key in protected non-volatile storage that is not exposed through the normal system bus, the architecture reduces the risk that untrusted firmware can exfiltrate the authorization secret via standard load/store operations.
+
+\subsection{Fail-Stop Policy Trade-offs (Halt on Failure)}
+The selected failure policy is \emph{fail-stop}: on authorization failure the processor halts and both execution and debug remain disabled.
+This improves security by preventing repeated online attempts within a single boot session and by ensuring that the system does not enter an ambiguous partially-initialized state.
+However, fail-stop also introduces availability considerations: accidental misconfiguration, provisioning errors, or benign communication faults can halt the device until a reset and correct authorization are provided.
+In operational deployments, this trade-off is typically acceptable when the protected asset (device integrity, mission correctness) has higher priority than uninterrupted availability, but it motivates careful provisioning and recovery procedures.
+
+\subsection{Toolchain as Part of the Trusted Computing Base}
+Unlike approaches that rely on post-build binary rewriting, the custom authorization primitive is integrated into the compilation workflow and can be invoked from C/assembly.
+This improves deployability and reduces accidental omission of the security trigger.
+At the same time, it expands the trusted computing base to include aspects of the toolchain and the host programming workflow.
+Practically, this means that build provenance (which compiler produced the image and under what policy) becomes part of the security argument, and thus the toolchain and its distribution must be treated as security-sensitive artifacts.
+
+\subsection{Operational Considerations: Provisioning, Binding, and Auditability}
+The security guarantees rely on correct provisioning of the reference key (or derived verifier) into protected storage and on a consistent host-to-key binding policy.
+The host-side database and log tracking provide operational benefits: they enable accountability (who programmed what and when) and can support incident investigation.
+For production use, the binding model should be paired with a clear lifecycle policy (enrollment, rotation, revocation) and an administrative process for handling compromised or decommissioned hosts.
+
+\subsection{Scope and Assumptions}
+The architecture is designed to mitigate unauthorized programming and debug activation under physical-access threat models, assuming the protected key storage and compare path are not trivially readable via software.
+It does not eliminate all physical attacks (e.g., advanced fault injection or invasive extraction), but it raises the difficulty of unauthorized reflashing and invasive debugging by enforcing a device-side authorization gate that cannot be bypassed by ordinary software.
+
+\section{Future Work}
+\label{sec:futurework}
+
+\subsection{Key Lifecycle Management (Rotation and Revocation)}
+Future work should add explicit support for key rotation and host revocation.
+In practice, enrollment must handle compromised hosts and expired credentials; revocation lists or epoch-based keys can prevent continued authorization from previously trusted endpoints.
+
+\subsection{Stronger Cryptographic Binding and Attestation}
+The current design can be strengthened by deriving the authorization token from a standard cryptographic challenge--response protocol and binding it to device-unique identity.
+Remote attestation extensions could additionally report measured boot state and firmware identity to a verifier, enabling fleet-level monitoring and stronger provenance guarantees.
+
+\subsection{Hardening Against Replay and Online Guessing}
+While fail-stop reduces repeated attempts within a boot session, future work can incorporate monotonic counters, backoff timers, and attempt-limiting stored in protected state to resist repeated reset-based guessing.
+Adding nonces/challenges in the authorization exchange further reduces replay risk.
+
+\subsection{Formal Verification of the Authenticator FSM}
+Because the Authenticator is security-critical control logic, formally verifying the FSM (safety and liveness properties, absence of unintended transitions) would strengthen assurance.
+This includes proving that unauthorized paths cannot assert \texttt{exec\_enable} or \texttt{debug\_enable}.
+
+\subsection{Micro-architectural Evaluation and Overhead Measurement}
+Future evaluation should quantify the performance and area/power impact of the custom instruction path and protected compare logic, including worst-case latency of verification and impact on boot time.
+This is particularly important for constrained devices where timing and code-size budgets are tight.
+
+\subsection{Broader Policy Controls Beyond Debug}
+The same authorization primitive can be extended to gate other sensitive operations (e.g., firmware update mode, privileged peripheral access, secure memory regions), enabling a more comprehensive policy framework with minimal additional hardware complexity.
+
