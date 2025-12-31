@@ -3,6 +3,7 @@
 If the chat UI cannot display images, open these files directly from the repo/workspace:
 
 - **All figures as one file**: `Results_Figures.pdf`
+- **Results-only figures (recommended for the paper)**: `Results_Figures_Selected.pdf`
 - **Individual images**: `figures/`
 
 ## Suggested mapping for the paper “Results/Evaluation” section

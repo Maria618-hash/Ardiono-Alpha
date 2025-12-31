@@ -6,8 +6,9 @@
 % \usepackage{booktabs}
 % \usepackage{multirow}
 %
-% If compiling from within /paper, keep this; otherwise adjust paths.
-\graphicspath{{../figures/}{figures/}}
+% Make figure paths robust whether the main .tex is in repo root or in /paper.
+% (LaTeX paths are case-sensitive on Linux; keep file extensions as-is, e.g., .PNG)
+\graphicspath{{figures/}{../figures/}}
 
 \section{Results and Evaluation}
 \label{sec:results}
