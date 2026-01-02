@@ -19,24 +19,3 @@ The design shifts part of the security argument from purely runtime checks to th
 \subsection{Operationalization: Provisioning and Policy}
 The security guarantees depend on correct provisioning of the reference key (or derived verifier) into protected storage and consistent host-side binding policy. The operational workflow benefits from centralized records and log tracking, which support accountability and can assist incident investigation. For deployment beyond a laboratory setting, the binding policy must be complemented with explicit lifecycle procedures (enrollment, administrative recovery, and decommissioning).
 
-\section{Future Work}
-\label{sec:futurework}
-
-\subsection{Cryptographic Protocol Refinement}
-Future work should formalize the authorization exchange as a standard cryptographic protocol (e.g., nonce-based challenge--response) and bind authorization tokens to a device-unique identity. This would strengthen resistance to replay and improve interoperability with established secure-boot and attestation ecosystems.
-
-\subsection{Key Lifecycle Management}
-An operational system requires key rotation and endpoint revocation. Adding explicit rotation epochs, revocation lists, and administrative recovery procedures would enable continued security under host compromise and credential expiration.
-
-\subsection{Anti-Replay and Attempt Limiting Across Resets}
-While fail-stop constrains repeated attempts per boot session, repeated reset-based attempts remain possible in principle. Persisting attempt counters in protected state, adding exponential backoff, and requiring fresh nonces from the device can raise the cost of brute-force or replay-driven attempts.
-
-\subsection{Formal Methods and Assurance}
-Because the Authenticator FSM is security-critical, future work should apply formal verification to prove safety properties (e.g., unauthorized paths never assert \texttt{exec\_enable} or \texttt{debug\_enable}) and to validate that failure states are absorbing under the specified policy.
-
-\subsection{Overhead Characterization}
-The current evaluation focuses on functional correctness. A follow-on study should quantify overhead, including verification latency (impact on boot time), hardware area/power of the compare path, and any code-size impact introduced by toolchain integration.
-
-\subsection{Policy Generalization}
-The same authorization primitive can be extended to gate additional privileged operations (e.g., firmware update mode, privileged peripheral configuration, secure memory region access). This would generalize the mechanism from debug-only control to a broader platform authorization framework.
-
