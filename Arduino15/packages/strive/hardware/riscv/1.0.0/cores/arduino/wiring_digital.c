@@ -4,19 +4,30 @@
 
 __BEGIN_DECLS
 
+static inline uint32_t _to_hw_pin(uint32_t pin)
+{
+    // If it's a normal Arduino pin number, map through variant.
+    // If it's already a raw SoC pin number (>= variant size), pass through.
+    if (pin < variant_pin_map_size) {
+        return variant_pin_map[pin].bit_pos;
+    }
+    return pin;
+}
+
 void pinMode( uint32_t dwPin, uint32_t dwMode)
 {
+    uint32_t hwPin = _to_hw_pin(dwPin);
     #ifdef REMAP_ENABLED
-    Remap(dwPin, dwMode, GPIO);
+    Remap((uint8_t)hwPin, (uint8_t)dwMode, GPIO);
     #endif
 
     #ifndef REMAP_ENABLED
     if (dwMode == OUTPUT)
     {
-        GPIO_DIR|=1<<(dwPin);
+        GPIO_DIR|=1<<(hwPin);
     }
     else{
-        GPIO_DIR &= ~(1<<(dwPin));
+        GPIO_DIR &= ~(1<<(hwPin));
     }
 
     #endif
@@ -25,14 +36,15 @@ void pinMode( uint32_t dwPin, uint32_t dwMode)
 
 void digitalWrite(uint32_t pin, uint32_t val)
 {
+    uint32_t hwPin = _to_hw_pin(pin);
     if(val)
     {
-    GPIO_OUTPUT |= 1<<pin;  // BitSet
+    GPIO_OUTPUT |= 1<<hwPin;  // BitSet
     }
 
     else
     {
-    GPIO_OUTPUT &= ~(1<<pin);
+    GPIO_OUTPUT &= ~(1<<hwPin);
     }
 
 }
@@ -40,7 +52,8 @@ void digitalWrite(uint32_t pin, uint32_t val)
 int digitalRead(uint32_t pin)
 {
     int state;
-    state = GPIO_INPUT & 1<<(pin);
+    uint32_t hwPin = _to_hw_pin(pin);
+    state = GPIO_INPUT & 1<<(hwPin);
     if (state)
     {
         return 1;
@@ -163,19 +176,30 @@ __END_DECLS
 #include "Arduino.h"
 __BEGIN_DECLS
 
+static inline uint32_t _to_hw_pin(uint32_t pin)
+{
+    // If it's a normal Arduino pin number, map through variant.
+    // If it's already a raw SoC pin number (>= variant size), pass through.
+    if (pin < variant_pin_map_size) {
+        return variant_pin_map[pin].bit_pos;
+    }
+    return pin;
+}
+
 void pinMode( uint32_t dwPin, uint32_t dwMode)
 {
+    uint32_t hwPin = _to_hw_pin(dwPin);
     #ifdef REMAP_ENABLED
-    Remap(dwPin, dwMode, GPIO);
+    Remap((uint8_t)hwPin, (uint8_t)dwMode, GPIO);
     #endif
 
     #ifndef REMAP_ENABLED
     if (dwMode == OUTPUT)
     {
-        GPIO_DIR|=1<<(dwPin);
+        GPIO_DIR|=1<<(hwPin);
     }
     else{
-        GPIO_DIR &= ~(1<<(dwPin));
+        GPIO_DIR &= ~(1<<(hwPin));
     }
 
     #endif
@@ -211,18 +235,19 @@ void pinMode( uint32_t dwPin, uint32_t dwMode)
 
 void digitalWrite(uint32_t pin, uint32_t val)
 {
+    uint32_t hwPin = _to_hw_pin(pin);
     volatile uint32_t* gpio_out;
 
-    if (pin < 32)
+    if (hwPin < 32)
         gpio_out = (volatile uint32_t*)(GPIO1_BASE_ADDR + 0x04);
-    else if (pin < 64)
+    else if (hwPin < 64)
         gpio_out = (volatile uint32_t*)(GPIO2_BASE_ADDR + 0x04);
-    else if (pin <= 93)
+    else if (hwPin <= 93)
         gpio_out = (volatile uint32_t*)(GPIO3_BASE_ADDR + 0x04);
     else
         return; // invalid pin
 
-    uint32_t bit = pin % 32;
+    uint32_t bit = hwPin % 32;
 
     if (val)
         *gpio_out |= (1 << bit);
@@ -232,18 +257,19 @@ void digitalWrite(uint32_t pin, uint32_t val)
 
 int digitalRead(uint32_t pin)
 {
+    uint32_t hwPin = _to_hw_pin(pin);
     volatile uint32_t* gpio_in;
 
-    if (pin < 32)
+    if (hwPin < 32)
         gpio_in = (volatile uint32_t*)(GPIO1_BASE_ADDR + 0x00);
-    else if (pin < 64)
+    else if (hwPin < 64)
         gpio_in = (volatile uint32_t*)(GPIO2_BASE_ADDR + 0x00);
-    else if (pin <= 93)
+    else if (hwPin <= 93)
         gpio_in = (volatile uint32_t*)(GPIO3_BASE_ADDR + 0x00);
     else
         return 0; // invalid pin
 
-    uint32_t bit = pin % 32;
+    uint32_t bit = hwPin % 32;
 
     return ((*gpio_in & (1 << bit)) != 0) ? 1 : 0;
 }

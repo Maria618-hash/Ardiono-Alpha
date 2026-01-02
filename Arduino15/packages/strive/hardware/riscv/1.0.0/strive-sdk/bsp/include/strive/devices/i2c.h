@@ -17,13 +17,27 @@
 
 /* Registers Access */
 
-#define I2C_PRERlo_REG      (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_PRERlo*4)))    
-#define I2C_PRERhi_REG      (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_PRERhi*4)))    
-#define I2C_CTR_REG         (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_CTR*4)))    
-#define I2C_TXR_REG         (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_TXR*4)))    
-#define I2C_RXR_REG         (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_RXR*4)))    
-#define I2C_CR_REG          (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_CR*4)))    
-#define I2C_SR_REG          (*(volatile unsigned* )( (I2C_BASE_ADDR) +  (I2C_SR*4)))    
+#include <stdint.h>
+
+// Base-address-parametric register accessors.
+// These allow multiple I2C controller instances to share the same driver code.
+#define I2C_REG(base, reg)            (*(volatile unsigned *)( (uintptr_t)(base) + ((reg) * 4u) ))
+#define I2C_PRERlo_REG_BASE(base)     I2C_REG((base), I2C_PRERlo)
+#define I2C_PRERhi_REG_BASE(base)     I2C_REG((base), I2C_PRERhi)
+#define I2C_CTR_REG_BASE(base)        I2C_REG((base), I2C_CTR)
+#define I2C_TXR_REG_BASE(base)        I2C_REG((base), I2C_TXR)
+#define I2C_RXR_REG_BASE(base)        I2C_REG((base), I2C_RXR)
+#define I2C_CR_REG_BASE(base)         I2C_REG((base), I2C_CR)
+#define I2C_SR_REG_BASE(base)         I2C_REG((base), I2C_SR)
+
+// Backwards-compatible single-instance aliases.
+#define I2C_PRERlo_REG      I2C_PRERlo_REG_BASE(I2C_BASE_ADDR)
+#define I2C_PRERhi_REG      I2C_PRERhi_REG_BASE(I2C_BASE_ADDR)
+#define I2C_CTR_REG         I2C_CTR_REG_BASE(I2C_BASE_ADDR)
+#define I2C_TXR_REG         I2C_TXR_REG_BASE(I2C_BASE_ADDR)
+#define I2C_RXR_REG         I2C_RXR_REG_BASE(I2C_BASE_ADDR)
+#define I2C_CR_REG          I2C_CR_REG_BASE(I2C_BASE_ADDR)
+#define I2C_SR_REG          I2C_SR_REG_BASE(I2C_BASE_ADDR)
 
 
 /* Bits */
