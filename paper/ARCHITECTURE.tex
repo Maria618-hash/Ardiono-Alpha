@@ -3,6 +3,9 @@
 \section{System Architecture}
 \label{sec:architecture}
 
+\subsection{System Overview and Layering}
+Fig.~\ref{fig:arch-flow} summarizes the end-to-end architecture and the interaction between (i) the host application, (ii) software-controlled communication protocols (e.g., UART/SPI), and (iii) device-side security logic. The host application coordinates compilation/programming and orchestrates the authorization exchange. Communication with the target occurs through an interface/physical layer, while device-side security logic and an ISA-level enforcement hook ensure authorization is checked before privileged capabilities are released.
+
 \subsection{Architectural Components}
 \label{subsec:arch-components}
 
@@ -22,6 +25,10 @@
 
 \textbf{Host binding database and audit log.} A centralized host-side database stores the binding relationship between \emph{host identity}, \emph{device identity}, and \emph{authorization material}. In addition to the current binding record, the database maintains audit data (e.g., latest programming event, timestamps, toolchain version, and device identifier) to support traceability and accountability.
 
+\subsection{Authorization Dataflow (Key Sequencing over UART)}
+\label{subsec:auth-dataflow}
+The authorization protocol is organized as a short, explicit sequence transmitted over UART prior to enabling privileged operation. As depicted in Fig.~\ref{fig:arch-flow}, the host sends a control sequence (Start $\rightarrow$ Key-1 $\rightarrow$ Key-2 $\rightarrow$ Key-3 $\rightarrow$ Enable $\rightarrow$ End). The Authenticator and compare logic validate keys against protected values stored in flash. Upon successful comparison (\texttt{True}), the design enables the debug unit and releases execution into the main code path. In addition, the custom instruction \texttt{kc} provides an ISA-visible trigger that couples authorization state to the program image and execution context, supporting compiler-integrated enforcement (opcode + immediate field as shown in the diagram).
+
 \subsection{Key Material and Binding Model}
 \label{subsec:key-model}
 
@@ -29,7 +36,10 @@ Let \(K \in \{0,1\}^{26}\) denote a 26-bit authorization key (or verifier) provi
 
 \textbf{Host-side generation and binding.} A host authorization key is generated from a mixture of host identifiers and dynamic inputs, and is bound to both the authorized host record and the target device record. Concretely, the input material includes: (i) \texttt{timestamp}, (ii) \texttt{machineID}, (iii) \texttt{hostUUID}, (iv) \texttt{deviceUUID}, and (v) a random nonce \(r\). Abstractly, key derivation is modeled as:
 \begin{equation}
-K=\mathrm{Trunc}_{26}\!\Big(\mathrm{Mix}(\texttt{timestamp},\texttt{machineID},\texttt{hostUUID},\texttt{deviceUUID},r)\Big),
+\begin{aligned}
+K &= \mathrm{Trunc}_{26}\Big(\mathrm{Mix}(\texttt{timestamp},\texttt{machineID}, \\
+&\qquad\qquad\qquad\ \texttt{hostUUID},\texttt{deviceUUID},r)\Big),
+\end{aligned}
 \label{eq:key-derivation}
 \end{equation}
 where \(r\) is a nonce and \(\mathrm{Mix}(\cdot)\) is a mixing/KDF function selected to meet security requirements. The database stores the binding tuple (host, device, key metadata) and maintains the latest programming log entry for auditability.
@@ -47,4 +57,11 @@ A custom instruction \texttt{kc} is used as the authorization trigger.
 
 We define the Authenticator FSM as: states \(S=\{\textsf{LOCKED},\textsf{VERIFY},\textsf{AUTHORIZED},\textsf{HALT}\}\); inputs \(\texttt{kc\_event}\), \(\texttt{match}\); outputs \(\texttt{exec\_enable}\), \(\texttt{debug\_enable}\), \(\texttt{halt\_cpu}\).
 On reset, the FSM enters \(\textsf{LOCKED}\) and asserts \(\texttt{exec\_enable}=0\), \(\texttt{debug\_enable}=0\). On \(\texttt{kc\_event}\) it transitions to \(\textsf{VERIFY}\). If \(\texttt{match}=1\), it transitions to \(\textsf{AUTHORIZED}\) and asserts both gates; if \(\texttt{match}=0\), it transitions to \(\textsf{HALT}\) (absorbing) and asserts \(\texttt{halt\_cpu}=1\).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig_arch_flow.png}
+  \caption{Architecture overview: host application, software-controlled protocol interface (UART/SPI), device security logic (protected flash, compare unit, authenticator), and ISA-level enforcement hook via custom instruction \texttt{kc}.}
+  \label{fig:arch-flow}
+\end{figure}
 
