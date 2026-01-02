@@ -68,7 +68,7 @@ Fig.~\ref{fig:loadimage} shows a programming session log including the \texttt{l
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{compiler_design__image18.PNG}
+  \includegraphics[width=\linewidth]{fig_loadimage.png}
   \caption{Programming workflow evidence: host log includes \texttt{load\_image} for the compiled firmware ELF.}
   \label{fig:loadimage}
 \end{figure}
@@ -79,7 +79,7 @@ Fig.~\ref{fig:halted} provides evidence consistent with a fail-stop halt state.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{compiler_design__image16.png}
+  \includegraphics[width=\linewidth]{fig_halted.png}
   \caption{Fail-stop behavior: processor indicates a halted state consistent with halt-on-failure enforcement.}
   \label{fig:halted}
 \end{figure}
@@ -106,4 +106,7 @@ Table~\ref{tab:results-summary} summarizes observed behaviors supported by the c
     \bottomrule
   \end{tabular}
 \end{table}
+
+% Prevent floats from drifting into the Discussion section.
+\FloatBarrier
 
