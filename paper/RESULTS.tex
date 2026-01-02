@@ -39,38 +39,25 @@ Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 
 \subsection{Authorization and Debug Enablement (Key Match)}
 The core functional requirement is that debug access is released only after successful authorization.
-Fig.~\ref{fig:keymatch} shows the key exchange and matching evidence in the application log, and Fig.~\ref{fig:debugenabled} shows the resulting ``Debugger is enabled'' indication after a successful match.
+Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{fig_keymatch.png}
-  \caption{Authorization evidence: key exchange and match indication in the host application log.}
-  \label{fig:keymatch}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
+  \includegraphics[width=\linewidth]{fig_keymatch.png}\vspace{0.6ex}
   \includegraphics[width=\linewidth]{fig_debugenabled.png}
-  \caption{Debug gating: debugger enablement occurs only after successful key match.}
-  \label{fig:debugenabled}
+  \caption{Authorization and debug gating evidence: (top) key exchange and successful match indication; (bottom) debugger enabled after a successful match.}
+  \label{fig:auth}
 \end{figure}
 
 \subsection{Connection and Programming Workflow}
-Fig.~\ref{fig:connected} shows an example ``Connected Successfully'' state in the programming interface.
-Fig.~\ref{fig:loadimage} shows a programming session log including the \texttt{load\_image} operation for a firmware ELF, demonstrating an end-to-end workflow from compilation to device programming.
+Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{fig_connected.png}
-  \caption{Connection status: host tool indicates successful device connection.}
-  \label{fig:connected}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
+  \includegraphics[width=\linewidth]{fig_connected.png}\vspace{0.6ex}
   \includegraphics[width=\linewidth]{fig_loadimage.png}
-  \caption{Programming workflow evidence: host log includes \texttt{load\_image} for the compiled firmware ELF.}
-  \label{fig:loadimage}
+  \caption{Programming workflow evidence: (top) host tool indicates successful device connection; (bottom) host log includes \texttt{load\_image} for the compiled firmware ELF.}
+  \label{fig:program}
 \end{figure}
 
 \subsection{Fail-Stop Enforcement (Halt-on-Failure)}
@@ -98,10 +85,10 @@ Table~\ref{tab:results-summary} summarizes observed behaviors supported by the c
     Custom instruction compiles and emits & Fig.~\ref{fig:compile} \\
     ELF$\rightarrow$HEX generation succeeds & Fig.~\ref{fig:compile} \\
     Hex inspection supported & Fig.~\ref{fig:hex} \\
-    Key exchange and match visible & Fig.~\ref{fig:keymatch} \\
-    Debug enabled only after match & Fig.~\ref{fig:debugenabled} \\
-    Device connection workflow supported & Fig.~\ref{fig:connected} \\
-    Programming log shows image load & Fig.~\ref{fig:loadimage} \\
+    Key exchange and match visible & Fig.~\ref{fig:auth} \\
+    Debug enabled only after match & Fig.~\ref{fig:auth} \\
+    Device connection workflow supported & Fig.~\ref{fig:program} \\
+    Programming log shows image load & Fig.~\ref{fig:program} \\
     Halt-on-failure evidence & Fig.~\ref{fig:halted} \\
     \bottomrule
   \end{tabular}
