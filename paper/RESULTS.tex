@@ -12,7 +12,7 @@
 \label{sec:results}
 
 \subsection{Evidence Artifacts and Experimental Workflow}
-Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} confirming that the custom authorization instruction is supported end-to-end (compile, assemble, link, and produce hex images), and (ii) \emph{system-level validation} confirming that both execution and debug access are gated by authorization and that failures result in a fail-stop halt.
+Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} confirming that the custom authorization instruction is supported end-to-end (compile, assemble, link, and produce hex images), and (ii) \emph{system-level validation} confirming that both execution and debug access are gated by authorization.
 Evidence was collected from the host-side application logs and screenshots extracted from the development artifacts.
 
 \subsection{Toolchain Validation}
@@ -60,17 +60,6 @@ Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a suc
   \label{fig:program}
 \end{figure}
 
-\subsection{Fail-Stop Enforcement (Halt-on-Failure)}
-The security policy requires halting the processor on authorization failure while keeping execution and debug disabled.
-Fig.~\ref{fig:halted} provides evidence consistent with a fail-stop halt state.
-
-\begin{figure}[!t]
-  \centering
-  \includegraphics[width=0.97\linewidth]{fig_halted.png}
-  \caption{Fail-stop behavior: processor indicates a halted state consistent with halt-on-failure enforcement.}
-  \label{fig:halted}
-\end{figure}
-
 \subsection{Summary}
 Table~\ref{tab:results-summary} summarizes observed behaviors supported by the collected evidence.
 
@@ -89,7 +78,6 @@ Table~\ref{tab:results-summary} summarizes observed behaviors supported by the c
     Debug enabled only after match & Fig.~\ref{fig:auth} \\
     Device connection workflow supported & Fig.~\ref{fig:program} \\
     Programming log shows image load & Fig.~\ref{fig:program} \\
-    Halt-on-failure evidence & Fig.~\ref{fig:halted} \\
     \bottomrule
   \end{tabular}
 \end{table}
