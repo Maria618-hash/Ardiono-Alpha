@@ -1,0 +1,50 @@
+% Architecture section (paper-ready). This is a compact version; expand as needed.
+
+\section{System Architecture}
+\label{sec:architecture}
+
+\subsection{Architectural Components}
+\label{subsec:arch-components}
+
+\textbf{Processing core.} The target is a standard embedded CPU extended with decode support for a security instruction. The extension is minimal: it adds an opcode pattern for the authorization instruction and a control path to invoke the security subsystem without exposing secret material on the normal memory hierarchy.
+
+\textbf{Security-instruction interface.} The decode/execute path recognizes a custom instruction (\texttt{kc}) and forwards its operands and execution context to the security subsystem. The forwarded metadata includes the immediate field (used to convey an authorization token fragment) and, optionally, privilege/boot-stage context to ensure the authorization sequence is invoked at the intended point (e.g., BootROM/early boot).
+
+\textbf{Protected key storage (NVM).} The reference authorization material is stored in a protected non-volatile region that is \emph{not memory-mapped} into the CPU's standard load/store address space. Access to this region is mediated only through the verification datapath, preventing untrusted firmware from reading the key through conventional bus transactions.
+
+\textbf{Compare/verification unit.} A constant-time comparator internally reads the reference value and compares it against a candidate token derived from the \texttt{kc} operands and context. The unit outputs only a one-bit decision \(\texttt{match} \in \{0,1\}\) (and optional status), and never exposes the reference value externally.
+
+\textbf{Authenticator (control FSM).} A security control finite-state machine (FSM) consumes the verification outcome and drives two gating outputs:
+(i) \(\texttt{exec\_enable}\), which releases execution into normal firmware, and
+(ii) \(\texttt{debug\_enable}\), which unlocks invasive debug/program access.
+
+\textbf{Debug-unit gate.} The debug subsystem is disabled by default. It is enabled only when \(\texttt{debug\_enable}=1\), ensuring that invasive debug operations are unavailable prior to successful authorization.
+
+\textbf{Host binding database and audit log.} A centralized host-side database stores the binding relationship between \emph{host identity}, \emph{device identity}, and \emph{authorization material}. In addition to the current binding record, the database maintains audit data (e.g., latest programming event, timestamps, toolchain version, and device identifier) to support traceability and accountability.
+
+\subsection{Key Material and Binding Model}
+\label{subsec:key-model}
+
+Let \(K \in \{0,1\}^{26}\) denote a 26-bit authorization key (or verifier) provisioned into protected storage. The key is derived from both \emph{host-specific} and \emph{device-specific} information to implement binding that is resistant to trivial reuse across endpoints.
+
+\textbf{Host-side generation and binding.} A host authorization key is generated from a mixture of host identifiers and dynamic inputs, and is bound to both the authorized host record and the target device record. Concretely, the input material includes: (i) \texttt{timestamp}, (ii) \texttt{machineID}, (iii) \texttt{hostUUID}, (iv) \texttt{deviceUUID}, and (v) a random nonce \(r\). Abstractly, key derivation is modeled as:
+\begin{equation}
+K=\mathrm{Trunc}_{26}\!\Big(\mathrm{Mix}(\texttt{timestamp},\texttt{machineID},\texttt{hostUUID},\texttt{deviceUUID},r)\Big),
+\label{eq:key-derivation}
+\end{equation}
+where \(r\) is a nonce and \(\mathrm{Mix}(\cdot)\) is a mixing/KDF function selected to meet security requirements. The database stores the binding tuple (host, device, key metadata) and maintains the latest programming log entry for auditability.
+
+\textbf{Provisioning.} The device stores \(K\) (or a derived verifier reference) in protected NVM during manufacturing or authorized enrollment. Device-specific identifiers (e.g., \texttt{deviceUUID}) are recorded in the database and included in derivation so the resulting authorization material is bound to a specific target device.
+
+\subsection{ISA-Level Authorization Primitive}
+\label{subsec:isa-primitive}
+
+A custom instruction \texttt{kc} is used as the authorization trigger.
+\textbf{Form:} \texttt{kc rd, imm20} (I-type format). \textbf{Semantics:} executing \texttt{kc} supplies a candidate token \(T\) derived from operands and context; the verification unit compares \(T\) to \(K\) and the Authenticator updates state. The primary effect is gating of both execution and debug enablement.
+
+\subsection{Authenticator FSM (Fail-Stop, Dual Gating)}
+\label{subsec:fsm}
+
+We define the Authenticator FSM as: states \(S=\{\textsf{LOCKED},\textsf{VERIFY},\textsf{AUTHORIZED},\textsf{HALT}\}\); inputs \(\texttt{kc\_event}\), \(\texttt{match}\); outputs \(\texttt{exec\_enable}\), \(\texttt{debug\_enable}\), \(\texttt{halt\_cpu}\).
+On reset, the FSM enters \(\textsf{LOCKED}\) and asserts \(\texttt{exec\_enable}=0\), \(\texttt{debug\_enable}=0\). On \(\texttt{kc\_event}\) it transitions to \(\textsf{VERIFY}\). If \(\texttt{match}=1\), it transitions to \(\textsf{AUTHORIZED}\) and asserts both gates; if \(\texttt{match}=0\), it transitions to \(\textsf{HALT}\) (absorbing) and asserts \(\texttt{halt\_cpu}=1\).
+

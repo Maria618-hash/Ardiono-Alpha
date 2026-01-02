@@ -1,0 +1,20 @@
+% Paper-ready Future Work (revised to match this project scope).
+
+\section{Future Work}
+\label{sec:futurework}
+
+\subsection{Device-Bound Key Derivation and Provisioning Workflow}
+While the current design binds authorization to host- and device-associated identifiers (e.g., UUIDs), a complete deployment requires a well-defined provisioning workflow. Future work will formalize enrollment steps for extracting/confirming a device identifier, generating the device-bound verifier, and securely provisioning the reference value into protected non-volatile storage. This includes defining recovery procedures for legitimate re-enrollment (e.g., device replacement) while preventing unauthorized re-binding.
+
+\subsection{Database-Backed Policy and Audit at Scale}
+The host-side database can be extended from a single binding store to a policy service that manages multiple devices, multiple authorized hosts, and role-based access (e.g., operator vs. administrator). Future work will add (i) firmware metadata storage (firmware hash/version), (ii) per-device authorization history, and (iii) reproducible build metadata (toolchain version, configuration), enabling stronger provenance and easier forensic analysis.
+
+\subsection{Multi-Step Authorization (Key Sequencing)}
+The design diagrams include a staged authorization sequence (e.g., Key-1 $\rightarrow$ Key-2 $\rightarrow$ Key-3). Future work will implement and evaluate multi-step authorization in the Authenticator FSM, including strict ordering, per-step timeout constraints, and explicit failure-to-halt semantics. This can improve robustness against partial replay and makes the authorization protocol more resistant to trivial single-token reuse.
+
+\subsection{Hardware and Micro-Architectural Evaluation}
+The current results emphasize functional correctness and workflow evidence. Future work will quantify overhead and design trade-offs, including (i) authorization latency (boot-time impact), (ii) area/power cost of the compare path and control FSM, and (iii) any code-size impact introduced by toolchain integration and BootROM logic.
+
+\subsection{Toolchain Hardening and Regression Testing}
+To make the ISA extension sustainable, future work will add automated regression tests that validate encoding/decoding, compilation, disassembly, and correct placement of the authorization primitive in early boot. This includes a small test suite that checks that binaries contain the expected instruction sequences and that failure modes (halt-on-failure) are triggered under incorrect tokens.
+

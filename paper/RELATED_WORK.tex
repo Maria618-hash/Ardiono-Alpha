@@ -1,0 +1,28 @@
+\section{Related Work}
+\label{sec:relatedwork}
+
+Embedded platforms are increasingly deployed in environments where adversaries can obtain physical access, interact with programming and debug interfaces, and attempt firmware replacement. Prior work addresses these threats along several directions: (i) BootROM-centered secure boot, (ii) securing longer boot chains (e.g., OS/FPGA-style stacks), (iii) debug and test interface security, (iv) hardware-enforced trusted execution and minimal TCB designs, (v) software-only hardening, and (vi) compiler, toolchain, and binary-translation infrastructures that make low-level enforcement mechanisms practical to deploy. This section reviews these approaches and motivates instruction-triggered, key-gated authorization with toolchain support.
+
+\subsection{BootROM-Based Secure Boot and Early-Stage Integrity}
+Secure boot typically anchors trust in immutable first-stage code (BootROM/ROM-resident loader) that authenticates subsequent software before execution. Bin \emph{et al.} design BootROM support for secure boot mode, reinforcing the BootROM’s role as the earliest enforcement point and focusing on validating system images during startup to prevent unauthorized firmware execution~\cite{bin2020bootrom}. Complementing this, Rashmi R.\,V. and Karthikeyan survey secure boot techniques for embedded applications, highlighting common architectural patterns and practical constraints (e.g., resource limits, deployment workflow) that shape how image authentication is implemented~\cite{rv2018securebootreview}. While these works establish boot-time authenticity as a baseline, they leave open how \emph{post-boot} privileged actions (e.g., enabling debug/program access) should be authorized once some code is running—particularly under physical-access threat models where adversaries can iteratively probe and reflash.
+
+A related line of work emphasizes extending boot trust into device identity and measurement chains. The DICE architecture specifies a mechanism for device identity composition and chained measurement, which is widely used as a conceptual basis for building scalable roots of trust and attestation for constrained devices~\cite{tcg_dice}.
+
+\subsection{Boot-Chain Protection for Richer Stacks (Embedded Linux / FPGA Systems)}
+As embedded systems incorporate more complex boot sequences (multiple software stages, configuration artifacts, and OS components), integrity must extend beyond a single image check. Devic \emph{et al.} explicitly address this problem for an embedded Linux boot flow on FPGA, securing the boot process against tampering and replay attacks by verifying artifacts in a multi-stage chain~\cite{devic2011fpga}. This class of work motivates defenses that remain robust when attackers target whichever stage is easiest to manipulate.
+
+\subsection{Debug/Test/Programming Interface Security}
+Debug and test access are widely recognized as high-impact attack surfaces because they provide invasive control over execution, memory, and device state. IEEE~1149.1 standardizes the test access port and boundary-scan architecture that underpins much of the modern debug/test ecosystem~\cite{ieee1149_1}. Beyond standardization, boundary-scan/test-mode pathways can enable attacks when an adversary can enter privileged test states~\cite{ali2014boundaryscanattack}. Recent work also explores adding explicit authentication mechanisms to debug access; for example, Lapeyre \emph{et al.} propose a lightweight JTAG authentication IP intended to support secure device testing while restricting unauthorized debug usage~\cite{lapeyre2022jtagauth}.
+
+\subsection{Hardware-Enforced Trusted Execution and Minimal-TCB Approaches}
+TrustZone popularized a hardware partitioning model that enables a ``secure world'' isolated from the normal execution environment~\cite{arm_trustzone}. Open-platform efforts such as Keystone demonstrate how trusted execution environments (TEEs) can be engineered with explicit, auditable interfaces~\cite{lee2020keystone}. In parallel, systems such as TrustVisor, Flicker, and Memoir motivate minimizing trusted code while maintaining measured execution and continuity guarantees~\cite{mccune2010trustvisor,mccune2008flicker,parno2011memoir}. For embedded-scale devices, TrustLite proposes isolation mechanisms tailored to constrained systems~\cite{koeberl2014trustlite}.
+
+\subsection{System Assurance via Formal Verification}
+Because low-level enforcement mechanisms are security-critical, prior work emphasizes formal verification as a path to high assurance. The seL4 microkernel demonstrates formal verification at the operating-system kernel level~\cite{klein2009sel4,klein2014tocs}.
+
+\subsection{Software-Only Hardening: Obfuscation and Key-Dependent Checks}
+Software protection techniques deter tampering and reverse engineering by transforming code or embedding secret-dependent checks. Collberg \emph{et al.} provide a foundational taxonomy of obfuscating transformations~\cite{collberg1997obfuscation}.
+
+\subsection{Toolchain Infrastructure, ISA Extensibility, and Deployable Low-Level Mechanisms}
+Many enforcement mechanisms require reliable support from the compiler and binary utilities. Shen \emph{et al.} present LLBT, an LLVM-based static binary translator~\cite{shen2012llbt}. Zakai introduces Emscripten, an LLVM-to-JavaScript compiler~\cite{zakai2011emscripten}. Finally, RISC-V’s explicit support for extensibility motivates instruction-level mechanisms that remain compatible with conventional toolchains and disassembly workflows~\cite{waterman2014riscv}.
+
