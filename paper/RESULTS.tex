@@ -41,24 +41,24 @@ Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 The core functional requirement is that debug access is released only after successful authorization.
 Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.49\textwidth]{fig_keymatch.png}\hfill
-  \includegraphics[width=0.49\textwidth]{fig_debugenabled.png}
-  \caption{Authorization and debug gating evidence: (left) key exchange and successful match indication; (right) debugger enabled after a successful match.}
+  \includegraphics[width=\linewidth]{fig_keymatch.png}\vspace{0.3ex}
+  \includegraphics[width=\linewidth]{fig_debugenabled.png}
+  \caption{Authorization and debug gating evidence: (top) key exchange and successful match indication; (bottom) debugger enabled after a successful match.}
   \label{fig:auth}
-\end{figure*}
+\end{figure}
 
 \subsection{Connection and Programming Workflow}
 Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.49\textwidth]{fig_connected.png}\hfill
-  \includegraphics[width=0.49\textwidth]{fig_loadimage.png}
-  \caption{Programming workflow evidence: (left) host tool indicates successful device connection; (right) host log includes \texttt{load\_image} for the compiled firmware ELF.}
+  \includegraphics[width=\linewidth]{fig_connected.png}\vspace{0.3ex}
+  \includegraphics[width=\linewidth]{fig_loadimage.png}
+  \caption{Programming workflow evidence: (top) host tool indicates successful device connection; (bottom) host log includes \texttt{load\_image} for the compiled firmware ELF.}
   \label{fig:program}
-\end{figure*}
+\end{figure}
 
 \subsection{Summary}
 Table~\ref{tab:results-summary} summarizes observed behaviors supported by the collected evidence.
