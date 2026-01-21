@@ -3,15 +3,13 @@
 \section{Future Work}
 \label{sec:futurework}
 
-Future work will formalize device-bound provisioning: reliable extraction of device
-identity, key derivation, secure enrollment into protected non-volatile storage, and
-recovery procedures that prevent unauthorized re-binding. The staged authorization
-sequence shown in the diagrams can be implemented with strict ordering and timeouts to
-strengthen resistance to partial replay.
+Future work will integrate the authorization primitive with secure boot and firmware
+update flows to ensure the trigger is placed in early boot and that updates cannot
+bypass the check. We will also evaluate robustness against fault and glitch attacks by
+adding attempt counters, rate limiting, and tamper-evident audit logs.
 
-We will also extend the host database into a policy service with richer audit metadata
-(firmware hashes, toolchain version, and per-device authorization history). Additional
-evaluation is needed to quantify area/power overhead and authorization latency, and to
-add regression tests that verify encoding, placement, and failure behavior of the
-authorization instruction.
+On the engineering side, we will quantify hardware cost and latency across target
+microcontrollers and expand automated toolchain tests to validate encoding, placement,
+and failure semantics across compiler versions. We also plan to extend the host policy
+model to support per-firmware keys and role-based authorization for operators.
 
