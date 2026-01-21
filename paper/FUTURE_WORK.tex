@@ -3,11 +3,12 @@
 \section{Future Work}
 \label{sec:futurework}
 
-Future work will integrate the authorization primitive into the boot chain so the
-\texttt{kc} trigger executes before any untrusted code and keys are bound to device
-identity and boot measurements. This includes aligning with BootROM secure boot and
-device identity composition (DICE) to support measured boot and key binding that
-survives firmware updates~\cite{bin2020bootrom,rv2018securebootreview,jaeger2020diceharder,parno2010bootstrapping}.
+Future work will formalize boot-chain policy for the existing BootROM placement of
+\texttt{kc}, ensuring the trigger executes before any untrusted code across platform
+variants and that keys are bound to device identity and boot measurements. This
+includes aligning with BootROM secure boot and device identity composition (DICE) to
+support measured boot and key binding that survives firmware
+updates~\cite{bin2020bootrom,rv2018securebootreview,jaeger2020diceharder,parno2010bootstrapping}.
 We will also study key rotation and revocation policies in the host database, including
 per-firmware authorization records.
 
