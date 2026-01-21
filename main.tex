@@ -16,24 +16,23 @@
 \maketitle
 
 \section{Abstract}
-Embedded devices are increasingly deployed in environments where adversaries can obtain
-physical access and attempt unauthorized firmware replacement or invasive debugging.
-While secure boot establishes integrity at startup, many platforms still expose debug
-and programming interfaces that can be abused after boot. This paper presents a
-hardware--software co-design that gates both execution and debug enablement on a
-device-resident authorization decision. The design introduces a minimal ISA extension
-with a custom authorization instruction (\texttt{kc}) that triggers verification against
-key material stored in protected non-volatile memory and never exposed through the
-normal load/store path. A security FSM enforces fail-stop behavior by enabling execution
-and debug only on successful verification. On the host side, authorization material is
-derived from host- and device-specific identifiers and recorded in a binding database
-to support traceability. The approach is integrated into the toolchain so that the
-authorization primitive is emitted and preserved through compilation and image
-generation. Evaluation artifacts demonstrate end-to-end feasibility: the custom
-instruction compiles into firmware images, key exchange precedes debug enablement, and
-the programming workflow logs enforce the intended policy. The results support the
-practicality of instruction-triggered, key-gated authorization for securing embedded
-programming and execution.
+Embedded devices increasingly operate in adversarial environments where physical access
+enables firmware replacement and invasive debugging. Although secure boot protects the
+initial image, it does not necessarily constrain post-boot debug and programming
+interfaces. This paper presents a hardware--software co-design that gates both execution
+and debug enablement on a device-resident authorization decision. The approach adds a
+minimal ISA extension with a custom authorization instruction (\texttt{kc}) that invokes
+verification against key material stored in protected non-volatile memory, never exposed
+via the standard load/store path. A constant-time comparator and security FSM enforce
+fail-stop behavior: execution and debug are released only after successful verification.
+On the host side, authorization material is derived from host and device identifiers and
+recorded in a binding database to support traceability and audit. Toolchain integration
+ensures the authorization primitive is emitted and preserved across compilation and
+image generation. Evaluation artifacts show end-to-end feasibility, including successful
+emission of the custom instruction, key exchange preceding debug enablement, and
+workflow logs consistent with the intended policy. Index Terms---embedded systems,
+debug access control, ISA extensions, hardware--software co-design, key-based
+authorization, toolchain integration.
 
 \section{Introduction}
 Embedded systems now underpin critical infrastructure, industrial control, and
