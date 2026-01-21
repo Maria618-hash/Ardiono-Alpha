@@ -4,18 +4,17 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Interpretation of Results}
-The presented evidence supports three core properties of the proposed design: (i) the authorization primitive is usable through the standard build pipeline (compile, link, and image generation), (ii) debug enablement is released only after an explicit authorization event, and (iii) the failure policy is fail-stop (halt-on-failure) with both execution and debug remaining disabled. Collectively, these properties establish that authorization is enforced \emph{at the device} and is not solely a host-side convention.
+The evaluation artifacts support three core properties: the authorization instruction
+is usable through the standard build pipeline, debug enablement is released only after
+explicit authorization, and failure is fail-stop with both execution and debug
+disabled. These results indicate that authorization is enforced on the device rather
+than being only a host-side convention.
 
-\subsection{Security Rationale and Expected Resistance}
-The architecture targets a pragmatic embedded threat surface: unauthorized firmware replacement and invasive debugging after physical access. By implementing the reference key in protected non-volatile storage that is not accessible via ordinary memory transactions, the design reduces the feasibility of key extraction by untrusted firmware through standard load/store operations. Furthermore, coupling authorization to an ISA-visible trigger integrates the policy into the execution model: authorization is invoked explicitly and can be located and audited in compiled artifacts, which is advantageous in engineering workflows where reproducibility and traceability are required.
-
-\subsection{Fail-Stop Enforcement (Halt-on-Failure)}
-Selecting halt-on-failure provides a conservative security posture. In particular, the fail-stop policy prevents the system from progressing into a partially-initialized state after a failed authorization attempt and reduces the opportunity for iterative online probing within a single boot session. From an engineering standpoint, fail-stop also simplifies state reasoning: the security FSM transitions either to an \emph{authorized} mode that releases both gates, or to an absorbing halt state that releases none.
-
-\subsection{Trusted Computing Base Considerations}
-The design shifts part of the security argument from purely runtime checks to the combined behavior of hardware enforcement and the software/toolchain pipeline. Because the authorization trigger is intended to be emitted deterministically by the toolchain, the toolchain and programming workflow become security-relevant artifacts. In practice, this motivates hardening and controlling distribution of the compiler/toolchain, and recording build provenance (e.g., toolchain version and policy) as part of the programming audit trail.
-
-\subsection{Operationalization: Provisioning and Policy}
-The security guarantees depend on correct provisioning of the reference key (or derived verifier) into protected storage and consistent host-side binding policy. The operational workflow benefits from centralized records and log tracking, which support accountability and can assist incident investigation. For deployment beyond a laboratory setting, the binding policy must be complemented with explicit lifecycle procedures (enrollment, administrative recovery, and decommissioning).
+The design targets physical-access threats by storing the reference key in protected
+non-volatile memory that is not accessible through ordinary load/store operations,
+reducing key extraction by untrusted firmware. The ISA-visible trigger makes
+authorization explicit and auditable in compiled artifacts, but it also makes the
+toolchain and provisioning workflow part of the trusted computing base. Practical
+deployment therefore requires controlled toolchain distribution, provenance logging,
+and clear lifecycle policies for enrollment and recovery.
 
