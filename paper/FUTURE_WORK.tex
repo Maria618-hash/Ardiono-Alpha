@@ -9,13 +9,13 @@ variants and that keys are bound to device identity and boot measurements. This
 includes aligning with BootROM secure boot and device identity composition (DICE) to
 support measured boot and key binding that survives firmware
 updates~\cite{bin2020bootrom,rv2018securebootreview,jaeger2020diceharder,parno2010bootstrapping}.
-We will also study key rotation and revocation policies in the host database, including
-per-firmware authorization records.
+Key rotation and revocation policies should also be defined in the host database,
+including per-firmware authorization records.
 
-We also plan to harden debug authorization using challenge--response protocols and
-rate limiting consistent with authenticated JTAG models~\cite{lapeyre2022jtagauth,wang2020schnorrjtag}.
-In parallel, we will evaluate resilience to fault/glitch and side-channel attacks and
-quantify area/power/latency overhead across target microcontrollers. Finally, we will
-extend regression testing and formal modeling of the FSM to raise assurance in the
+Debug authorization can be hardened using challenge--response protocols and rate
+limiting consistent with authenticated JTAG models~\cite{lapeyre2022jtagauth,wang2020schnorrjtag}.
+Resilience to fault/glitch and side-channel attacks should be evaluated, along with
+area/power/latency overhead across target microcontrollers. Finally, regression
+testing and formal modeling of the FSM should be extended to raise assurance in the
 authorization semantics~\cite{klein2009sel4}.
 
