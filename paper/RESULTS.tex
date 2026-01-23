@@ -11,13 +11,11 @@
 \section{Results and Evaluation}
 \label{sec:results}
 
-\subsection{Evidence Artifacts and Experimental Workflow}
-Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} confirming that the custom authorization instruction is supported end-to-end (compile, assemble, link, and produce hex images), and (ii) \emph{system-level validation} confirming that both execution and debug access are gated by authorization.
-Evidence was collected from the host-side application logs and screenshots extracted from the development artifacts.
+\subsection{Experimental Workflow}
+Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} confirming that the custom authorization instruction is supported end-to-end (compile, assemble, link, and produce hex images), and (ii) \emph{system-level validation} confirming that both execution and debug access are gated by authorization. Evidence was collected from host-side application logs and screenshots extracted from the development artifacts.
 
-\subsection{Toolchain Validation}
-Fig.~\ref{fig:compile} shows compilation of a test program that invokes the custom instruction via inline assembly, along with successful ELF-to-HEX generation reported by the tool.
-This demonstrates that the custom instruction can be emitted from C code and preserved across the build pipeline without manual binary patching.
+\subsection{Evidence Artifacts}
+\textbf{Toolchain validation.} Fig.~\ref{fig:compile} shows compilation of a test program that invokes the custom instruction via inline assembly, along with successful ELF-to-HEX generation reported by the tool. This demonstrates that the custom instruction can be emitted from C code and preserved across the build pipeline without manual binary patching.
 
 \begin{figure}[!t]
   \centering
@@ -26,9 +24,7 @@ This demonstrates that the custom instruction can be emitted from C code and pre
   \label{fig:compile}
 \end{figure}
 
-\subsection{Firmware Inspection (HEX Viewer)}
-To support operator verification and troubleshooting, the host application provides a hex viewer for generated images.
-Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
+\textbf{Firmware inspection (HEX viewer).} To support operator verification and troubleshooting, the host application provides a hex viewer for generated images. Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 
 \begin{figure}[!t]
   \centering
@@ -37,9 +33,7 @@ Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
   \label{fig:hex}
 \end{figure}
 
-\subsection{Authorization and Debug Enablement (Key Match)}
-The core functional requirement is that debug access is released only after successful authorization.
-Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
+\textbf{Authorization and debug enablement.} The core functional requirement is that debug access is released only after successful authorization. Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
 \begin{figure}[!t]
   \centering
@@ -49,8 +43,7 @@ Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchan
   \label{fig:auth}
 \end{figure}
 
-\subsection{Connection and Programming Workflow}
-Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
+\textbf{Connection and programming workflow.} Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
 \begin{figure}[!t]
   \centering
@@ -60,8 +53,7 @@ Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a suc
   \label{fig:program}
 \end{figure}
 
-\subsection{Summary}
-Table~\ref{tab:results-summary} summarizes observed behaviors supported by the collected evidence.
+\textbf{Summary.} Table~\ref{tab:results-summary} summarizes observed behaviors supported by the collected evidence.
 
 \begin{table}[t]
   \centering
