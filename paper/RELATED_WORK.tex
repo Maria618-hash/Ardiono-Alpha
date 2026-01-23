@@ -67,4 +67,7 @@ and binary translation~\cite{zakai2011emscripten,shen2012llbt}. RISC-V’s exten
 supports custom instruction integration with conventional
 toolchains~\cite{waterman2014riscv}. This motivates implementing authorization
 instructions through toolchain support rather than binary rewriting.
+In practice, compiler-integrated mechanisms also improve reproducibility and audit
+because the authorization primitive is visible in emitted binaries and can be verified
+in standard build logs and disassembly workflows.
 
