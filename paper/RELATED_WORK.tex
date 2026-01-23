@@ -59,6 +59,13 @@ ROP-based attack models (2010), and obfuscation taxonomies
 complementary to device-bound authorization and contextualize the broader threat
 landscape.
 
+Authenticated debug mechanisms restrict access at the interface level, including JTAG
+authentication IP and identity-based schemes~\cite{lapeyre2022jtagauth,wang2020schnorrjtag}.
+While these approaches reduce exposure of invasive debug ports, they are typically
+orthogonal to the execution model. Our work complements them by binding authorization
+to an ISA-visible trigger that the compiler emits, so debug enablement and execution
+gating are enforced on-device rather than only at the external interface.
+
 \subsection{Toolchain and ISA Extensibility}
 Many enforcement mechanisms require reliable support from the compiler and binary
 utilities. LLVM provides a foundation for program analysis and
