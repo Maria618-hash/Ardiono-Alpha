@@ -58,10 +58,10 @@ A custom instruction \texttt{kc} is used as the authorization trigger.
 The Authenticator FSM is defined as: states \(S=\{\textsf{LOCKED},\textsf{VERIFY},\textsf{AUTHORIZED},\textsf{HALT}\}\); inputs \(\texttt{kc\_event}\), \(\texttt{match}\); outputs \(\texttt{exec\_enable}\), \(\texttt{debug\_enable}\), \(\texttt{halt\_cpu}\).
 On reset, the FSM enters \(\textsf{LOCKED}\) and asserts \(\texttt{exec\_enable}=0\), \(\texttt{debug\_enable}=0\). On \(\texttt{kc\_event}\) it transitions to \(\textsf{VERIFY}\). If \(\texttt{match}=1\), it transitions to \(\textsf{AUTHORIZED}\) and asserts both gates; if \(\texttt{match}=0\), it transitions to \(\textsf{HALT}\) (absorbing) and asserts \(\texttt{halt\_cpu}=1\).
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \includegraphics[width=\linewidth]{fig_arch_flow.png}
+  \includegraphics[width=0.95\textwidth]{fig_arch_flow.png}
   \caption{Architecture overview: host application, software-controlled protocol interface (UART/SPI), device security logic (protected flash, compare unit, authenticator), and ISA-level enforcement hook via custom instruction \texttt{kc}.}
   \label{fig:arch-flow}
-\end{figure}
+\end{figure*}
 
