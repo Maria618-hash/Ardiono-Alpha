@@ -1,0 +1,132 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+
+% Figures are stored in ./figures
+\graphicspath{{figures/}}
+
+\title{Secure Execution in Embedded Systems}
+\subtitle{Custom ISA and Compiler Binding}
+\author{Maria Ayub \and Dr. Sajid Gul Khawaja}
+\institute{National University of Sciences and Technology (NUST)}
+\date{Master's Defense}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Agenda}
+  \begin{itemize}
+    \item Problem statement
+    \item Objective
+    \item Literature review (table)
+    \item Architecture
+    \item Results
+    \item Future work
+    \item Conclusion
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Problem Statement}
+  \begin{itemize}
+    \item Physical access enables firmware replacement and invasive debugging.
+    \item Secure boot validates the first image but does not restrict post-boot debug/programming.
+    \item Debug interfaces expose memory and execution control.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Objective}
+  \begin{itemize}
+    \item Enforce device-local authorization before execution and debug enablement.
+    \item Keep key material out of the normal load/store path.
+    \item Integrate authorization into the toolchain for reproducible, auditable binaries.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Literature Review (Summary Table)}
+  \footnotesize
+  \begin{tabular}{@{}p{3.2cm}p{6.2cm}p{4.1cm}@{}}
+    \toprule
+    \textbf{Area} & \textbf{Representative idea} & \textbf{Gap} \\
+    \midrule
+    Secure boot & BootROM validation of images and measured boot chains & Post-boot debug/program access remains open \\
+    Debug security & JTAG authentication and interface hardening & Does not bind authorization to execution flow \\
+    TEEs / minimal TCB & Isolation and trusted execution environments & Not focused on debug gating in embedded flows \\
+    Attestation & Control-flow and runtime integrity evidence & Evidence only, not access control \\
+    Toolchain support & ISA extensibility and compiler integration & Requires a concrete authorization primitive \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Architecture}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{itemize}
+      \item Custom instruction \texttt{kc} triggers authorization.
+      \item Protected key storage not memory-mapped.
+      \item Authenticator FSM gates \texttt{exec\_enable} and \texttt{debug\_enable}.
+    \end{itemize}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{fig_arch_flow.png}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Results: Toolchain and Hex Inspection}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{fig_compile.png}
+    \vspace{0.5ex}
+    {\scriptsize Compilation and ELF$\rightarrow$HEX generation}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{fig_hex.png}
+    \vspace{0.5ex}
+    {\scriptsize Hex viewer for generated image}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Results: Authorization and Debug Enablement}
+  \centering
+  \includegraphics[width=0.9\linewidth]{fig_keymatch.png}
+  \vspace{0.5ex}
+  \includegraphics[width=0.9\linewidth]{fig_debugenabled.png}
+\end{frame}
+
+\begin{frame}{Results: Programming Workflow}
+  \centering
+  \includegraphics[width=0.9\linewidth]{fig_connected.png}
+  \vspace{0.5ex}
+  \includegraphics[width=0.9\linewidth]{fig_loadimage.png}
+\end{frame}
+
+\begin{frame}{Future Work}
+  \begin{itemize}
+    \item Formalize boot-chain policy for BootROM placement across platforms.
+    \item Add key rotation, revocation, and per-firmware authorization records.
+    \item Evaluate fault/glitch resilience and side-channel leakage.
+    \item Quantify area/power/latency and expand regression testing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item Instruction-triggered authorization gates execution and debug access.
+    \item Protected key storage and FSM enforce device-local control.
+    \item Toolchain integration enables deployable, auditable security.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Questions}
+  \centering
+  {\Large Thank you}
+\end{frame}
+
+\end{document}
