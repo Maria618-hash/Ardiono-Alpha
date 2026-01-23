@@ -9,92 +9,57 @@ hardening, and compiler/toolchain infrastructure for deployable low-level mechan
 This section reviews these lines and motivates instruction-triggered, key-gated
 authorization with toolchain support.
 
-\subsection{BootROM-Based Secure Boot and Early-Stage Integrity}
+\subsection{Boot Integrity and Device Identity}
 Secure boot anchors trust in immutable first-stage code (BootROM/ROM-resident loader)
-that authenticates subsequent software. Early work on measured boot establishes trust
-properties over commodity boot stacks~\cite{parno2010bootstrapping}. Surveys then
+that authenticates subsequent software. Measured boot establishes trust properties
+over commodity boot stacks~\cite{parno2010bootstrapping}, and multi-stage boot-chain
+protection addresses richer embedded Linux/FPGA flows~\cite{devic2011fpga}. Surveys then
 summarize secure-boot techniques and practical constraints in embedded
 deployments~\cite{rv2018securebootreview}, and BootROM designs focus on validating
-system images during startup~\cite{bin2020bootrom}. These works establish boot-time
-authenticity but leave \emph{post-boot} debug/program authorization open under
-physical-access threats.
+system images during startup~\cite{bin2020bootrom}. A related line of work extends boot
+trust into device identity and measurement chains: DICE provides a hardware mechanism
+for device identity composition~\cite{jaeger2020diceharder}, and more recent surveys
+discuss trade-offs across embedded platforms and deployment
+models~\cite{wang2022securebootsurvey}. These works establish boot-time authenticity
+but leave \emph{post-boot} debug/program authorization open under physical-access
+threats.
 
-A related line of work extends boot trust into device identity and measurement chains.
-J{\"a}ger and Petri present a hardware implementation of the Device Identifier
-Composition Engine (DICE) for bootstrapping device trust~\cite{jaeger2020diceharder}.
-More recent surveys discuss trade-offs across embedded platforms and deployment
-models~\cite{wang2022securebootsurvey}.
-
-\subsection{Boot-Chain Protection for Richer Stacks (Embedded Linux / FPGA Systems)}
-As embedded systems incorporate more complex boot sequences (multiple software stages,
-configuration artifacts, and OS components), integrity must extend beyond a single
-image check. Devic \emph{et al.} address this problem for an embedded Linux boot flow on
-FPGA by verifying artifacts in a multi-stage
-chain~\cite{devic2011fpga}.
-
-\subsection{Debug/Test/Programming Interface Security}
+\subsection{Debug Access, Trusted Execution, and Runtime Protection}
 Debug and test access are high-impact attack surfaces because they provide invasive
 control over execution, memory, and device state. Early work extends JTAG for at-speed
-debug and emulator implementations~\cite{vandelogt2003jtag,chen2008jtagemu}. IEEE~1149.1
+debug and emulator implementations~\cite{vandelogt2003jtag,chen2008jtagemu}; IEEE~1149.1
 later standardizes the test access port and boundary-scan
 architecture~\cite{ieee1149_1}. Boundary-scan/test modes can be abused when an adversary
 enters privileged states~\cite{ali2014boundaryscanattack}. More recent work adds
 explicit authentication to debug access, including JTAG authentication IP and Schnorr-
 based identity schemes~\cite{walimbe2014jtagaxi,wang2020schnorrjtag,lapeyre2022jtagauth}.
 
-Additional work on authenticated or enhanced debug access motivates treating debug
-enablement as a privileged capability and binding it to explicit authorization.
-
-\subsection{Hardware-Enforced Trusted Execution and Minimal-TCB Approaches}
-Early secure-processor and minimal-TCB designs include AEGIS and minimal TCB code
-execution~\cite{suh2005aegis,mccune2007minimaltcb}. TrustVisor, Flicker, and Memoir
-then motivate minimizing trusted code while maintaining measured execution and
-continuity guarantees~\cite{mccune2010trustvisor,mccune2008flicker,parno2011memoir}. For
-embedded-scale devices, TrustLite targets constrained
-systems~\cite{koeberl2014trustlite}. TrustZone-style partitioning provides a widely
-deployed model for separating a trusted execution domain; evaluations highlight attack
-surfaces in heterogeneous SoCs~\cite{zhang2017trustzoneeval}. Open-platform efforts such
-as Keystone demonstrate TEEs with explicit, auditable
-interfaces~\cite{lee2020keystone}. Surveys add context on enclave-style designs and
-assumptions~\cite{costan2017secureprocessors,ahmed2025riscvtee}.
-
-Software-root-of-trust designs address trust establishment without large trusted
+Hardware-enforced trusted execution evolved from secure-processor and minimal-TCB
+designs (AEGIS and minimal TCB code execution)~\cite{suh2005aegis,mccune2007minimaltcb},
+to measured-execution systems such as Flicker, TrustVisor, and Memoir, and to
+constrained-device designs such as TrustLite~\cite{mccune2008flicker,mccune2010trustvisor,parno2011memoir,koeberl2014trustlite}.
+TrustZone evaluations highlight attack surfaces in heterogeneous
+SoCs~\cite{zhang2017trustzoneeval}, and Keystone demonstrates TEEs with explicit,
+auditable interfaces~\cite{lee2020keystone}. Surveys add context on enclave-style
+designs and assumptions~\cite{costan2017secureprocessors,ahmed2025riscvtee}, while
+software-root-of-trust work addresses trust establishment without large trusted
 stacks~\cite{gligor2019establishing}.
 
-\subsection{Runtime Integrity and Attestation for Embedded Systems}
-Beyond boot-time authenticity, several approaches provide evidence of runtime integrity
-and control-flow correctness. Cumulative attestation kernels (2012) extend attestation
-by accumulating evidence across execution~\cite{lemay2012cumulative}, followed by
-remote attestation mechanisms for embedded systems~\cite{kylanpaa2016remoteattest}, and
-collective attestation across embedded networks~\cite{ibrahim2018collectiveatt}.
+Runtime integrity mechanisms provide complementary evidence. Cumulative attestation
+kernels (2012) extend attestation by accumulating evidence across
+execution~\cite{lemay2012cumulative}, followed by remote attestation for embedded
+systems~\cite{kylanpaa2016remoteattest} and collective attestation across embedded
+networks~\cite{ibrahim2018collectiveatt}. Control-flow attestation progresses from
+C-FLAT (2016) to LO-FAT (2017) and later log-based and micro-architectural
+approaches~\cite{abera2016cflat,dessouky2017lofat,liu2019logbasedcfa,benyehuda2022nanovised}.
+Formal verification (seL4, 2009/2014) provides high-assurance evidence for critical
+code~\cite{klein2009sel4,klein2014tocs}. Software-only hardening includes CFI (2005),
+ROP-based attack models (2010), and obfuscation taxonomies
+(2020)~\cite{abadi2005cfi,checkoway2010rop,tran2020layered}. These techniques are
+complementary to device-bound authorization and contextualize the broader threat
+landscape.
 
-Control-flow attestation is a lightweight alternative to full-blown runtime monitoring.
-C-FLAT attests control-flow by instrumenting software and producing
-reports~\cite{abera2016cflat}, LO-FAT adds low-overhead hardware support in
-2017~\cite{dessouky2017lofat}, and later log-based and micro-architectural attestation
-methods further refine the space~\cite{liu2019logbasedcfa,benyehuda2022nanovised}. These
-lines are complementary to key-gated authorization: rather than preventing unauthorized
-programming/debug directly, they provide evidence about executed control flow and
-runtime state.
-
-\subsection{System Assurance via Formal Verification}
-Because low-level enforcement mechanisms are security-critical, prior work emphasizes
-formal verification as a path to high assurance. The seL4 microkernel demonstrates
-formal verification at the operating-system kernel level, first in 2009 and later with
-comprehensive verification results~\cite{klein2009sel4,klein2014tocs}.
-
-\subsection{Software-Only Hardening: Obfuscation and Key-Dependent Checks}
-Software protection techniques deter tampering and reverse engineering by transforming
-code or embedding secret-dependent checks. Control-Flow Integrity (CFI) constrains
-indirect control transfers~\cite{abadi2005cfi}, and return-oriented programming (ROP)
-highlights code-reuse attacks that motivate defenses for sensitive execution
-paths~\cite{checkoway2010rop}. More recent taxonomies summarize layered obfuscation
-techniques and security goals~\cite{tran2020layered}.
-
-These software-only techniques are not direct substitutes for device-bound
-authorization but contextualize the broader threat landscape.
-
-\subsection{Toolchain Infrastructure, ISA Extensibility, and Deployable Low-Level Mechanisms}
+\subsection{Toolchain and ISA Extensibility}
 Many enforcement mechanisms require reliable support from the compiler and binary
 utilities. LLVM provides a foundation for program analysis and
 transformation~\cite{lattner2004llvm}. Emscripten and LLBT show LLVM-based retargeting
