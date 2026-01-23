@@ -49,19 +49,24 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Literature Review (Summary Table)}
+\begin{frame}{Literature Review (Past to Recent)}
   \footnotesize
-  \begin{tabular}{@{}p{3.2cm}p{6.2cm}p{4.1cm}@{}}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{@{}p{2.2cm}p{3.8cm}p{4.6cm}p{2.7cm}@{}}
     \toprule
-    \textbf{Area} & \textbf{Representative idea} & \textbf{Gap} \\
+    \textbf{Period} & \textbf{Area} & \textbf{Representative idea} & \textbf{Gap / Our angle} \\
     \midrule
-    Secure boot & BootROM validation of images and measured boot chains & Post-boot debug/program access remains open \\
-    Debug security & JTAG authentication and interface hardening & Does not bind authorization to execution flow \\
-    TEEs / minimal TCB & Isolation and trusted execution environments & Not focused on debug gating in embedded flows \\
-    Attestation & Control-flow and runtime integrity evidence & Evidence only, not access control \\
-    Toolchain support & ISA extensibility and compiler integration & Requires a concrete authorization primitive \\
+    2010--2014 & Secure boot & BootROM validation and measured-boot chains & Post-boot debug remains open \\
+    2003--2014 & Debug/JTAG & Interface standardization and at-speed debug & Not tied to execution state \\
+    2005--2020 & TEEs/minimal TCB & Isolation and trusted execution environments & Debug gating not the focus \\
+    2012--2022 & Attestation/CFA & Runtime integrity and control-flow evidence & Evidence only, not access control \\
+    2020--2025 & Surveys/trends & Secure boot, TEEs, authenticated debug & Need device-local authorization \\
     \bottomrule
   \end{tabular}
+  \vspace{0.6ex}
+  \begin{itemize}
+    \item \textbf{This work:} ISA-triggered, key-gated authorization enforced on-device and emitted by the toolchain.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Architecture}
