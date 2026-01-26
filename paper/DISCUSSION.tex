@@ -25,14 +25,16 @@ and newer control-flow attestation techniques provide lightweight runtime eviden
 software behavior~\cite{benyehuda2022nanovised}. In this context, the contribution is
 complementary: authorization is bound to an ISA-visible primitive emitted by the
 toolchain, so privileged execution and debug access are gated by a device-local
-decision rather than host-side policy alone.
+decision rather than host-side policy alone. Table~\ref{tab:discussion-positioning}
+summarizes how the approach addresses limitations of earlier lines of work.
 
-\begin{table}[t]
+\begin{table*}[t]
   \centering
   \footnotesize
+  \setlength{\tabcolsep}{4pt}
   \caption{Positioning of the proposed approach against prior work.}
   \label{tab:discussion-positioning}
-  \begin{tabular}{@{}p{3.2cm}p{4.8cm}p{4.6cm}@{}}
+  \begin{tabular}{@{}p{3.0cm}p{5.9cm}p{5.9cm}@{}}
     \toprule
     \textbf{Line of work} & \textbf{Representative focus} & \textbf{Limitation addressed here} \\
     \midrule
@@ -43,5 +45,5 @@ decision rather than host-side policy alone.
     Proposed approach & ISA-triggered, device-local authorization & Gating enforced in hardware and toolchain artifacts \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}
 
