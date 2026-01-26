@@ -57,13 +57,11 @@ A custom instruction \texttt{kc} is used as the authorization trigger.
 
 The Authenticator FSM is defined by:
 {\small
-\begin{equation*}
-\begin{aligned}
-\mathbf{S} &= \{\textsf{LOCKED},\textsf{VERIFY},\textsf{AUTHORIZED},\textsf{HALT}\},\\
-\mathbf{I} &= \{\texttt{kc\_event}, \texttt{match}\},\\
-\mathbf{O} &= \{\texttt{exec\_enable}, \texttt{debug\_enable}, \texttt{halt\_cpu}\}.
-\end{aligned}
-\end{equation*}
+\[
+\mathbf{S}=\{\textsf{LOCKED},\textsf{VERIFY},\textsf{AUTHORIZED},\textsf{HALT}\},\quad
+\mathbf{I}=\{\texttt{kc\_event},\texttt{match}\},\quad
+\mathbf{O}=\{\texttt{exec\_enable},\texttt{debug\_enable},\texttt{halt\_cpu}\}.
+\]
 }
 On reset, the FSM enters \(\textsf{LOCKED}\) and asserts \(\texttt{exec\_enable}=0\), \(\texttt{debug\_enable}=0\). On \(\texttt{kc\_event}\) it transitions to \(\textsf{VERIFY}\). If \(\texttt{match}=1\), it transitions to \(\textsf{AUTHORIZED}\) and asserts both gates; if \(\texttt{match}=0\), it transitions to \(\textsf{HALT}\) (absorbing) and asserts \(\texttt{halt\_cpu}=1\).
 
