@@ -3,17 +3,16 @@
 
 \section{Overall Framework}
 The methodology enforces device-local authorization before execution and debug enablement.
-The pipeline integrates (i) a custom ISA instruction (\texttt{kc}), (ii) protected
-key storage in non-volatile memory, (iii) a constant-time comparator, (iv) a security
-FSM that gates execution and debug access, and (v) toolchain support that emits the
-authorization primitive in compiled binaries. The end-to-end workflow spans key
-binding on the host, UART-based authorization sequencing, and on-device verification
-before privileged capabilities are released. The overall flow is summarized in
-Fig.~\ref{fig:method-flow}.
+The pipeline integrates (i) a custom ISA instruction (\texttt{kc}), (ii) protected key
+storage in non-volatile memory, (iii) a constant-time comparator, (iv) a security FSM that
+gates execution and debug access, and (v) toolchain support that emits the authorization
+primitive in compiled binaries. The end-to-end workflow spans key binding on the host,
+UART-based authorization sequencing, and on-device verification before privileged
+capabilities are released. The overall flow is summarized in Fig.~\ref{fig:method-flow}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{fig_arch_flow.png}
+  \includegraphics[width=0.95\linewidth]{figures/fig_arch_flow.png}
   \caption{Methodology flow: host workflow, UART authorization sequence, protected key
   storage, compare/verification, and ISA-level trigger via \texttt{kc}.}
   \label{fig:method-flow}
@@ -36,21 +35,65 @@ Fig.~\ref{fig:method-flow}.
   \end{tabular}
 \end{table}
 
+\subsection{Threat Model and Assumptions}
+The threat model assumes physical access to the device, including the ability to connect
+to debug/program interfaces and attempt firmware replacement. The goal is to prevent
+unauthorized execution and debug enablement after boot. The model does not assume a
+trusted operating system, and it treats early boot firmware as potentially adversarial
+until authorization succeeds. The design assumes the protected key region is not
+memory-mapped and can only be accessed by the verification datapath.
+
 \section{Key Derivation and Binding}
-Authorization material is derived from host- and device-specific identifiers and
-recorded in a host database for traceability. A 26-bit key is formed by mixing
-timestamp, machine ID, host UUID, device UUID, and a nonce, and truncating to a fixed
-length. Provisioning stores the reference value in protected non-volatile memory that
-is not memory-mapped, preventing untrusted firmware from reading the key via standard
+Authorization material is derived from host- and device-specific identifiers and recorded
+in a host database for traceability. A 26-bit key is formed by mixing timestamp, machine
+ID, host UUID, device UUID, and a nonce, and truncating to a fixed length:
+\begin{equation}
+K=\mathrm{Trunc}_{26}\left(\mathrm{Mix}(\texttt{timestamp},\texttt{machineID},\texttt{hostUUID},\texttt{deviceUUID},r)\right).
+\end{equation}
+Provisioning stores the reference value in protected non-volatile memory that is not
+memory-mapped, preventing untrusted firmware from reading the key via standard
 load/store transactions~\cite{bin2020bootrom,rv2018securebootreview,jaeger2020diceharder}.
+
+\begin{table}[H]
+  \centering
+  \caption{Key derivation inputs and purpose}
+  \label{tab:key-derivation}
+  \begin{tabular}{@{}p{3.4cm}p{6.8cm}@{}}
+    \toprule
+    \textbf{Input} & \textbf{Purpose} \\
+    \midrule
+    \texttt{timestamp} & Freshness and audit correlation \\
+    \texttt{machineID} & Host binding \\
+    \texttt{hostUUID} & Operator identity binding \\
+    \texttt{deviceUUID} & Device identity binding \\
+    nonce \(r\) & Randomness to prevent reuse \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \section{Authorization Protocol}
 Authorization is organized as a short UART sequence: \texttt{Start} \(\rightarrow\)
 \texttt{Key-1} \(\rightarrow\) \texttt{Key-2} \(\rightarrow\) \texttt{Key-3}
 \(\rightarrow\) \texttt{Enable} \(\rightarrow\) \texttt{End}. Each fragment is compared
 against the protected reference, and any mismatch triggers a fail-stop halt. The
-\texttt{kc} instruction supplies an ISA-visible trigger that binds authorization to
-the program image and execution context.
+\texttt{kc} instruction supplies an ISA-visible trigger that binds authorization to the
+program image and execution context.
+
+\begin{table}[H]
+  \centering
+  \caption{UART authorization sequence}
+  \label{tab:auth-sequence}
+  \begin{tabular}{@{}p{3.2cm}p{6.8cm}@{}}
+    \toprule
+    \textbf{Message} & \textbf{Function} \\
+    \midrule
+    Start & Begins authorization session \\
+    Key-1..Key-3 & Key fragments compared to protected reference \\
+    Enable & Requests release of gated capabilities \\
+    End & Terminates authorization session \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \begin{algorithm}[H]
   \caption{Authorization sequence and gating}
@@ -73,13 +116,33 @@ the program image and execution context.
 \end{algorithm}
 
 \section{ISA Extension and Toolchain Integration}
-The custom instruction \texttt{kc} is encoded as an I-type instruction and recognized
-by the decode/execute path. Toolchain support is added so the instruction can be emitted
-from C or assembly without manual binary patching. The resulting binaries therefore
-contain an auditable, reproducible authorization trigger. ISA extensibility enables
-this integration without violating standard toolchains~\cite{waterman2014riscv}.
+The custom instruction \texttt{kc} is encoded as an I-type instruction and recognized by
+the decode/execute path. Toolchain support enables emission of \texttt{kc} from C or
+assembly without manual binary patching, yielding auditable binaries. ISA extensibility
+enables this integration without violating standard toolchains~\cite{waterman2014riscv}.
 
-\section{Host Workflow}
+\begin{table}[H]
+  \centering
+  \caption{Authorization instruction format}
+  \label{tab:kc-format}
+  \begin{tabular}{@{}p{3.2cm}p{6.8cm}@{}}
+    \toprule
+    \textbf{Field} & \textbf{Role} \\
+    \midrule
+    \texttt{opcode} & Identifies \texttt{kc} \\
+    \texttt{rd} & Destination register (status/placeholder) \\
+    \texttt{imm20} & Encodes token fragment/context \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Security FSM and Gating}
+The Authenticator FSM enforces fail-stop behavior. On reset, it enters \textsf{LOCKED}
+and holds \texttt{exec\_enable}=0 and \texttt{debug\_enable}=0. It transitions to
+\textsf{VERIFY} on \texttt{kc\_event}. A successful match releases both gates; a failed
+match transitions to an absorbing \textsf{HALT} state with \texttt{halt\_cpu}=1.
+
+\section{Host Workflow and Audit}
 The host application performs compilation, hex inspection, key exchange, and programming.
 Logs record programming events, toolchain versions, and device identifiers, enabling
 traceability and audit. The workflow ensures that authorization is granted explicitly
@@ -89,5 +152,5 @@ before privileged actions (debug and programming) are enabled.
 Functional validation uses build artifacts and host logs to confirm that the custom
 instruction compiles and is preserved through ELF$\rightarrow$HEX generation, that key
 matching precedes debug enablement, and that programming occurs only after successful
-authorization. The evaluation is designed to verify policy enforcement rather than
-benchmark performance overheads, which are deferred to future work.
+authorization. The evaluation verifies policy enforcement rather than benchmark
+performance overheads.
