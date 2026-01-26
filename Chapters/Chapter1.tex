@@ -1,0 +1,88 @@
+\chapter{Introduction}
+\label{Chapter1}
+
+Embedded systems are widely deployed in safety- and security-critical settings such as
+industrial control, automotive platforms, and consumer devices. In these environments,
+adversaries may obtain physical access and attempt unauthorized firmware replacement or
+invasive debugging. Secure boot mechanisms authenticate the initial firmware image, but
+they do not necessarily restrict \emph{post-boot} programming and debug access. As a
+result, debug/test interfaces remain a high-impact attack surface because they expose
+memory and execution control and can bypass software-level protections
+(\cite{ieee1149_1,ali2014boundaryscanattack}). Recent work has proposed authenticated
+debug mechanisms, yet such controls often remain external to the execution model
+(\cite{lapeyre2022jtagauth}).
+
+This thesis addresses the gap by enforcing device-local authorization before execution
+and debug enablement. The proposed approach introduces a minimal ISA extension and a
+custom instruction (\texttt{kc}) that triggers verification against key material stored
+in protected non-volatile memory. An on-device authenticator FSM gates both normal
+execution and debug access, ensuring that privileged capabilities are released only
+after successful authorization. The approach is integrated into the toolchain so that
+authorization is emitted and preserved through compilation, enabling reproducible and
+auditable binaries. The design targets practical deployment by leveraging ISA
+extensibility (e.g., RISC-V) and maintaining compatibility with standard build flows
+(\cite{waterman2014riscv,bin2020bootrom,rv2018securebootreview}).
+
+\section{Motivation}
+Physical access threats remain common for embedded devices deployed in the field. When
+debug interfaces are exposed or weakly protected, adversaries can extract secrets,
+modify firmware, or bypass runtime policies. Conventional secure boot verifies an image
+at startup but does not necessarily prevent post-boot debug access or reprogramming
+events. This motivates a mechanism that binds authorization to the execution model
+itself, rather than relying solely on host-side policy or external tooling. A hardware-
+software co-design with an ISA-visible authorization primitive provides a practical
+path to enforce such a policy directly on the device.
+
+\section{Problem Statement}
+Current embedded defenses leave three gaps. First, post-boot debug and programming
+access can be enabled without a device-local authorization check. Second, key material
+used for authorization is often accessible through ordinary memory transactions or
+insecure provisioning flows, enabling extraction by untrusted firmware. Third, host-
+side policies are insufficient when an attacker can replace firmware or bypass the
+host toolchain. A device-resident authorization mechanism is required that: (i) gates
+execution and debug access on-device, (ii) keeps keys out of the normal load/store
+path, and (iii) is integrated into the compiler/toolchain to ensure enforceability and
+auditability.
+
+\section{Scope and Objectives}
+This thesis focuses on an embedded platform with a minimal ISA extension and a
+hardware verification datapath. The scope includes: (i) definition of the custom
+instruction \texttt{kc}, (ii) protected key storage in non-volatile memory, (iii) an
+authenticator FSM that controls execution and debug gating, and (iv) toolchain support
+to emit and preserve the authorization primitive during compilation. The scope does
+not include full cryptographic key management at scale, advanced side-channel defenses,
+or production-grade certification workflows.
+
+The primary objectives are:
+\begin{itemize}
+  \item Design an ISA-level authorization primitive and its hardware datapath.
+  \item Enforce device-local gating of execution and debug access with fail-stop
+        behavior on authorization failure.
+  \item Integrate the authorization instruction into the compiler/toolchain pipeline.
+  \item Validate end-to-end functionality using build artifacts and host workflow logs.
+\end{itemize}
+
+\section{Contributions}
+The key contributions of this thesis are:
+\begin{itemize}
+  \item A minimal ISA extension that triggers device-local authorization via
+        \texttt{kc} without exposing key material to the normal memory hierarchy.
+  \item A security FSM that gates both execution and debug enablement and enforces
+        fail-stop behavior on failed authorization.
+  \item A compiler/toolchain integration that emits and preserves the authorization
+        primitive, enabling reproducible and inspectable binaries.
+  \item An end-to-end validation workflow demonstrating authorized programming and
+        debug enablement only after successful key verification.
+\end{itemize}
+
+\section{Thesis Structure}
+The remainder of the thesis is organized as follows:
+\begin{itemize}
+  \item \textbf{Chapter 2} reviews related work in secure boot, debug interface
+        security, trusted execution, and toolchain support.
+  \item \textbf{Chapter 3} presents the system architecture, including the ISA
+        extension, protected key storage, and authenticator FSM.
+  \item \textbf{Chapter 4} describes the toolchain integration and host workflow.
+  \item \textbf{Chapter 5} reports evaluation results and evidence artifacts.
+  \item \textbf{Chapter 6} discusses implications, limitations, and future directions.
+\end{itemize}
