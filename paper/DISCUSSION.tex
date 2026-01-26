@@ -4,29 +4,22 @@
 \section{Discussion}
 \label{sec:discussion}
 
-The evaluation artifacts support three core properties: the authorization instruction
-is usable through the standard build pipeline, debug enablement is released only after
+The evaluation artifacts confirm three properties: the authorization instruction is
+supported end-to-end by the build pipeline, debug enablement is released only after
 explicit authorization, and failure is fail-stop with both execution and debug
-disabled. These results indicate that authorization is enforced on the device rather
-than being only a host-side convention.
+disabled. These results show that authorization is enforced on-device rather than as a
+host-side convention.
 
-The design targets physical-access threats by storing the reference key in protected
-non-volatile memory that is not accessible through ordinary load/store operations,
-reducing key extraction by untrusted firmware. The ISA-visible trigger makes
-authorization explicit and auditable in compiled artifacts, but it also makes the
-toolchain and provisioning workflow part of the trusted computing base. Practical
-deployment therefore requires controlled toolchain distribution, provenance logging,
-and clear lifecycle policies for enrollment and recovery.
+The threat model is addressed by storing the reference key in protected non-volatile
+memory and invoking authorization via an ISA-visible trigger. This improves auditability
+of compiled artifacts but makes the toolchain and provisioning workflow part of the
+trusted computing base, requiring controlled distribution and lifecycle policy.
 
-Recent work (2019--2025) continues to strengthen adjacent defenses: surveys of secure
-boot and TEEs highlight evolving deployment trade-offs~\cite{wang2022securebootsurvey,ahmed2025riscvtee},
-authenticated debug mechanisms reduce exposure of invasive interfaces~\cite{lapeyre2022jtagauth},
-and newer control-flow attestation techniques provide lightweight runtime evidence of
-software behavior~\cite{benyehuda2022nanovised}. In this context, the contribution is
-complementary: authorization is bound to an ISA-visible primitive emitted by the
-toolchain, so privileged execution and debug access are gated by a device-local
-decision rather than host-side policy alone. Table~\ref{tab:discussion-positioning}
-summarizes how the approach addresses limitations of earlier lines of work.
+Recent work (2019--2025) strengthens secure boot, TEEs, authenticated debug, and
+control-flow attestation~\cite{wang2022securebootsurvey,ahmed2025riscvtee,lapeyre2022jtagauth,benyehuda2022nanovised}.
+The proposed approach complements these lines by binding authorization to an ISA-level
+primitive that gates execution and debug on-device. Table~\ref{tab:discussion-positioning}
+summarizes the positioning.
 
 \begin{table*}[t]
   \centering
