@@ -1,0 +1,93 @@
+\chapter{Methodology}
+\label{Chapter3}
+
+\section{Overall Framework}
+The methodology enforces device-local authorization before execution and debug enablement.
+The pipeline integrates (i) a custom ISA instruction (\texttt{kc}), (ii) protected
+key storage in non-volatile memory, (iii) a constant-time comparator, (iv) a security
+FSM that gates execution and debug access, and (v) toolchain support that emits the
+authorization primitive in compiled binaries. The end-to-end workflow spans key
+binding on the host, UART-based authorization sequencing, and on-device verification
+before privileged capabilities are released. The overall flow is summarized in
+Fig.~\ref{fig:method-flow}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{fig_arch_flow.png}
+  \caption{Methodology flow: host workflow, UART authorization sequence, protected key
+  storage, compare/verification, and ISA-level trigger via \texttt{kc}.}
+  \label{fig:method-flow}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Methodology pipeline summary}
+  \label{tab:method-pipeline}
+  \begin{tabular}{@{}p{3.2cm}p{4.6cm}p{4.6cm}@{}}
+    \toprule
+    \textbf{Stage} & \textbf{Input} & \textbf{Output} \\
+    \midrule
+    Key binding & Host/device identifiers, nonce & Device-bound key metadata \\
+    Provisioning & Reference key in protected NVM & Non-mapped key storage \\
+    Authorization sequence & Start, Key-1..Key-3, Enable & UART token stream \\
+    ISA trigger & \texttt{kc} instruction & Verification request \\
+    Gating & Compare result + FSM & \texttt{exec\_enable}, \texttt{debug\_enable} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Key Derivation and Binding}
+Authorization material is derived from host- and device-specific identifiers and
+recorded in a host database for traceability. A 26-bit key is formed by mixing
+timestamp, machine ID, host UUID, device UUID, and a nonce, and truncating to a fixed
+length. Provisioning stores the reference value in protected non-volatile memory that
+is not memory-mapped, preventing untrusted firmware from reading the key via standard
+load/store transactions~\cite{bin2020bootrom,rv2018securebootreview,jaeger2020diceharder}.
+
+\section{Authorization Protocol}
+Authorization is organized as a short UART sequence: \texttt{Start} \(\rightarrow\)
+\texttt{Key-1} \(\rightarrow\) \texttt{Key-2} \(\rightarrow\) \texttt{Key-3}
+\(\rightarrow\) \texttt{Enable} \(\rightarrow\) \texttt{End}. Each fragment is compared
+against the protected reference, and any mismatch triggers a fail-stop halt. The
+\texttt{kc} instruction supplies an ISA-visible trigger that binds authorization to
+the program image and execution context.
+
+\begin{algorithm}[H]
+  \caption{Authorization sequence and gating}
+  \KwIn{UART key fragments; \texttt{kc} event}
+  \KwOut{\texttt{exec\_enable}, \texttt{debug\_enable}}
+  Initialize: state=\textsf{LOCKED}, \texttt{exec\_enable}=0, \texttt{debug\_enable}=0\;
+  Await \texttt{Start} sequence over UART\;
+  \ForEach{fragment in \{\texttt{Key-1}, \texttt{Key-2}, \texttt{Key-3}\}}{
+    Compare fragment with protected NVM reference\;
+    \If{mismatch}{
+      state=\textsf{HALT}; \texttt{halt\_cpu}=1; \textbf{return}\;
+    }
+  }
+  On \texttt{kc} event, derive token \(T\) from operands/context\;
+  \If{\(T\) matches \(K\)}{
+    state=\textsf{AUTHORIZED}; \texttt{exec\_enable}=1; \texttt{debug\_enable}=1\;
+  }\Else{
+    state=\textsf{HALT}; \texttt{halt\_cpu}=1\;
+  }
+\end{algorithm}
+
+\section{ISA Extension and Toolchain Integration}
+The custom instruction \texttt{kc} is encoded as an I-type instruction and recognized
+by the decode/execute path. Toolchain support is added so the instruction can be emitted
+from C or assembly without manual binary patching. The resulting binaries therefore
+contain an auditable, reproducible authorization trigger. ISA extensibility enables
+this integration without violating standard toolchains~\cite{waterman2014riscv}.
+
+\section{Host Workflow}
+The host application performs compilation, hex inspection, key exchange, and programming.
+Logs record programming events, toolchain versions, and device identifiers, enabling
+traceability and audit. The workflow ensures that authorization is granted explicitly
+before privileged actions (debug and programming) are enabled.
+
+\section{Evaluation Setup}
+Functional validation uses build artifacts and host logs to confirm that the custom
+instruction compiles and is preserved through ELF$\rightarrow$HEX generation, that key
+matching precedes debug enablement, and that programming occurs only after successful
+authorization. The evaluation is designed to verify policy enforcement rather than
+benchmark performance overheads, which are deferred to future work.
