@@ -27,3 +27,21 @@ complementary: authorization is bound to an ISA-visible primitive emitted by the
 toolchain, so privileged execution and debug access are gated by a device-local
 decision rather than host-side policy alone.
 
+\begin{table}[t]
+  \centering
+  \footnotesize
+  \caption{Positioning of the proposed approach against prior work.}
+  \label{tab:discussion-positioning}
+  \begin{tabular}{@{}p{3.2cm}p{4.8cm}p{4.6cm}@{}}
+    \toprule
+    \textbf{Line of work} & \textbf{Representative focus} & \textbf{Limitation addressed here} \\
+    \midrule
+    Secure boot & Boot-time image authentication and measured boot & Post-boot debug/program access remains exposed \\
+    Debug security & JTAG authentication and interface hardening & Authorization not tied to execution flow \\
+    TEEs / minimal TCB & Isolation and trusted execution environments & Does not gate invasive debug by default \\
+    Attestation & Runtime integrity and control-flow evidence & Provides evidence, not access control \\
+    Proposed approach & ISA-triggered, device-local authorization & Gating enforced in hardware and toolchain artifacts \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
