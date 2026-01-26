@@ -27,28 +27,42 @@ Fig.~\ref{fig:arch-flow} summarizes the end-to-end architecture and the interact
 
 \subsection{Authorization Dataflow (Key Sequencing over UART)}
 \label{subsec:auth-dataflow}
-The authorization protocol is organized as a short, explicit sequence transmitted over UART prior to enabling privileged operation. As depicted in Fig.~\ref{fig:arch-flow}, the host sends a control sequence (Start $\rightarrow$ Key-1 $\rightarrow$ Key-2 $\rightarrow$ Key-3 $\rightarrow$ Enable $\rightarrow$ End). The Authenticator and compare logic validate keys against protected values stored in flash. Upon successful comparison (\texttt{True}), the design enables the debug unit and releases execution into the main code path. In addition, the custom instruction \texttt{kc} provides an ISA-visible trigger that couples authorization state to the program image and execution context, supporting compiler-integrated enforcement (opcode + immediate field as shown in the diagram). Algorithm~\ref{alg:auth-flow} summarizes the authorization flow and gating logic.
+The authorization protocol is organized as a short, explicit sequence transmitted over UART prior to enabling privileged operation. As depicted in Fig.~\ref{fig:arch-flow}, the host sends a control sequence (Start $\rightarrow$ Key-1 $\rightarrow$ Key-2 $\rightarrow$ Key-3 $\rightarrow$ Enable $\rightarrow$ End). The Authenticator and compare logic validate keys against protected values stored in flash. Upon successful comparison (\texttt{True}), the design enables the debug unit and releases execution into the main code path. In addition, the custom instruction \texttt{kc} provides an ISA-visible trigger that couples authorization state to the program image and execution context, supporting compiler-integrated enforcement (opcode + immediate field as shown in the diagram). Fig.~\ref{fig:auth-flow} summarizes the authorization flow and gating logic.
 
-\begin{algorithm}[t]
-  \caption{Authorization flow and gating logic}
-  \label{alg:auth-flow}
-  \begin{algorithmic}[1]
-    \STATE Initialize: \(\texttt{exec\_enable}=0\), \(\texttt{debug\_enable}=0\), state=\(\textsf{LOCKED}\)
-    \STATE Await \texttt{Start} sequence over UART
-    \FOR{each key fragment in \{Key-1, Key-2, Key-3\}}
-      \STATE Compare fragment with protected NVM value
-      \IF{mismatch}
-        \STATE state=\(\textsf{HALT}\); \(\texttt{halt\_cpu}=1\); \textbf{return}
-      \ENDIF
-    \ENDFOR
-    \STATE On \(\texttt{kc\_event}\), derive token \(T\) from operands/context
-    \IF{\(T\) matches \(K\)}
-      \STATE state=\(\textsf{AUTHORIZED}\); \(\texttt{exec\_enable}=1\); \(\texttt{debug\_enable}=1\)
-    \ELSE
-      \STATE state=\(\textsf{HALT}\); \(\texttt{halt\_cpu}=1\)
-    \ENDIF
-  \end{algorithmic}
-\end{algorithm}
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[
+    node distance=7mm and 10mm,
+    startstop/.style={rectangle, rounded corners, draw, align=center, minimum width=3.0cm, minimum height=0.7cm},
+    process/.style={rectangle, draw, align=center, minimum width=3.5cm, minimum height=0.7cm},
+    decision/.style={diamond, draw, aspect=2, align=center, inner sep=1pt},
+    line/.style={-Stealth, line width=0.6pt},
+    font=\small
+  ]
+    \node (start) [startstop] {Start};
+    \node (init) [process, below=of start] {Init: exec\_enable=0\\debug\_enable=0, state=LOCKED};
+    \node (rx) [process, below=of init] {Receive Start sequence};
+    \node (compare) [process, below=of rx] {Compare Key-1..Key-3};
+    \node (keysok) [decision, below=of compare] {All keys match?};
+    \node (halt1) [process, right=of keysok] {HALT\\halt\_cpu=1};
+    \node (kc) [process, below=of keysok] {kc\_event:\\derive token $T$};
+    \node (tokok) [decision, below=of kc] {$T$ matches $K$?};
+    \node (auth) [process, below=of tokok] {AUTHORIZED:\\exec\_enable=1\\debug\_enable=1};
+    \node (halt2) [process, right=of tokok] {HALT\\halt\_cpu=1};
+
+    \draw [line] (start) -- (init);
+    \draw [line] (init) -- (rx);
+    \draw [line] (rx) -- (compare);
+    \draw [line] (compare) -- (keysok);
+    \draw [line] (keysok) -- node[right]{Yes} (kc);
+    \draw [line] (keysok) -- node[above]{No} (halt1);
+    \draw [line] (kc) -- (tokok);
+    \draw [line] (tokok) -- node[right]{Yes} (auth);
+    \draw [line] (tokok) -- node[above]{No} (halt2);
+  \end{tikzpicture}
+  \caption{Authorization flow and gating logic (flowchart).}
+  \label{fig:auth-flow}
+\end{figure}
 
 \subsection{Key Material and Binding Model}
 \label{subsec:key-model}
