@@ -1,9 +1,9 @@
-\chapter{Implementation and Evaluation}
+\chapter{Implementation}
 \label{chapter4}
 
 \section{Implementation Overview}
-This chapter details the implementation of the authorization mechanism and the evaluation
-artifacts used to validate end-to-end enforcement. The implementation spans three layers:
+This chapter details the implementation of the authorization mechanism. The implementation spans
+three layers:
 (i) ISA extension and decode/execute integration for the \texttt{kc} instruction, (ii) a
 verification datapath with protected key storage and an Authenticator FSM, and (iii) host
 toolchain and application support for compilation, inspection, authorization exchange, and
@@ -46,52 +46,9 @@ device connection, and image programming. Authorization uses a short, explicit s
 (Start, Key-1..Key-3, Enable, End). The host application logs programming events and key
 match results, supporting traceability and audit.
 
-\section{Evaluation Setup}
-Evaluation uses toolchain- and system-level artifacts to confirm correct instruction emission,
-authorization enforcement, and gating behavior. Evidence includes compilation logs, generated
-HEX images, key match logs, and programming workflow records.
-
-\section{Results and Evidence Artifacts}
-Toolchain validation confirms that the custom instruction is emitted from C and preserved through
-ELF$\rightarrow$HEX generation. Fig.~\ref{fig:compile} shows compilation and HEX generation; Fig.~\ref{fig:hex}
-shows the hex viewer for the generated image. Fig.~\ref{fig:auth} provides evidence of key exchange
-and successful authorization followed by debug enablement. Fig.~\ref{fig:program} shows successful
-device connection and a programming log that includes \texttt{load\_image}.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig_compile.png}
-  \caption{Toolchain validation: compilation and ELF$\rightarrow$HEX generation with the custom instruction.}
-  \label{fig:compile}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig_hex.png}
-  \caption{HEX inspection: generated image viewed in the host application.}
-  \label{fig:hex}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig_keymatch.png}
-  \vspace{0.3ex}
-  \includegraphics[width=0.95\linewidth]{figures/fig_debugenabled.png}
-  \caption{Authorization evidence: key match followed by debug enablement.}
-  \label{fig:auth}
-\end{figure}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig_connected.png}
-  \vspace{0.3ex}
-  \includegraphics[width=0.95\linewidth]{figures/fig_loadimage.png}
-  \caption{Programming workflow evidence: successful connection and image load.}
-  \label{fig:program}
-\end{figure}
-
 \section{Summary}
-The implementation demonstrates end-to-end enforceability: the custom instruction is emitted by
-the toolchain, authorization is verified against protected key storage, and execution/debug access
-is gated by device-local policy. The collected artifacts confirm feasibility and operational
-integration with the host workflow.
+The implementation integrates a custom ISA instruction, protected key storage, a constant-time
+verifier, and an Authenticator FSM to gate execution and debug access. Toolchain support ensures
+that the authorization primitive is emitted and preserved across the build pipeline, while the
+host workflow provides compilation, inspection, authorization exchange, and programming steps.
+Evaluation results and evidence artifacts are presented in Chapter~5.
