@@ -49,28 +49,10 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
   \label{fig:program}
 \end{figure}
 
-\textbf{Summary.} Table~\ref{tab:results-summary} summarizes observed behaviors supported by the collected evidence.
-
-\noindent\begin{minipage}{\linewidth}
-  \centering
-  \small
-  \setlength{\tabcolsep}{3pt}
-  \captionof{table}{Functional validation summary from collected artifacts.}
-  \label{tab:results-summary}
-  \begin{tabular}{@{}ll@{}}
-    \toprule
-    \textbf{Requirement} & \textbf{Evidence} \\
-    \midrule
-    Custom instruction compiles and emits & Fig.~\ref{fig:compile} \\
-    ELF$\rightarrow$HEX generation succeeds & Fig.~\ref{fig:compile} \\
-    Hex inspection supported & Fig.~\ref{fig:hex} \\
-    Key exchange and match visible & Fig.~\ref{fig:auth} \\
-    Debug enabled only after match & Fig.~\ref{fig:auth} \\
-    Device connection workflow supported & Fig.~\ref{fig:program} \\
-    Programming log shows image load & Fig.~\ref{fig:program} \\
-    \bottomrule
-  \end{tabular}
-\end{minipage}
+\textbf{Summary.} The collected artifacts confirm that the custom instruction compiles
+and is preserved through ELF$\rightarrow$HEX generation, hex inspection is supported,
+authorization precedes debug enablement, and the host workflow supports connection and
+programming with explicit image loading.
 
 % Prevent floats from drifting into the Discussion section.
 \FloatBarrier
