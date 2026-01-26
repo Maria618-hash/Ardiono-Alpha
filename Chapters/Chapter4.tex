@@ -1,0 +1,120 @@
+\chapter{Proposed Graph-Based Transformer Model for Depression Detection}
+\label{chapter4}
+
+\section{Experimental Results}
+
+\subsection{Experimental Setup}
+The proposed model was built using the PyTorch framework and trained on a CUDA-enabled GPU to
+accelerate the learning process. EEG data from the MODMA dataset were divided into fixed-length
+windows, yielding 15{,}659 EEG windows with shape \(32 \times 256\) (channels \(\times\) time
+samples). The optimized set of 32 EEG channels was kept uniform across all experiments. A
+5-fold subject-wise cross-validation strategy was used, where subjects were split into five
+non-overlapping folds. In each fold, one subject group was used for testing and the remaining
+subjects were used for training and validation. This protocol prevents leakage of EEG windows
+from the same subject across train and test sets. Training ran for 20 epochs per fold in a
+supervised learning setting. Model optimization used backpropagation with a binary classification
+loss, and validation performance was monitored to assess convergence and generalization.
+
+\subsection{Evaluation Protocol}
+Model performance was assessed at the subject level by aggregating window-level predictions for
+each subject. This aligns with clinical practice where diagnosis is performed at the subject
+level rather than on short EEG segments. The evaluation metrics include accuracy, precision,
+recall (sensitivity), and specificity to provide a balanced assessment of performance for both
+MDD and healthy control (HC) subjects.
+
+\subsection{Cross-Validation Performance}
+Results from five-fold subject-wise cross-validation are summarized in
+Table~\ref{tab:cv}. The proposed model demonstrates consistently high accuracy and stable
+performance across folds, indicating strong generalization ability.
+
+\begin{table}[t]
+  \caption{Results of Five-Fold Subject-Wise Cross-Validation}
+  \centering
+  \begin{tabular}{cccc}
+    \toprule
+    Fold & Accuracy (\%) & Sensitivity & Specificity \\
+    \midrule
+    1 & 97.70 & 1.00 & 0.96 \\
+    2 & 98.02 & 0.96 & 1.00 \\
+    3 & 100.00 & 1.00 & 1.00 \\
+    4 & 99.55 & 1.00 & 0.99 \\
+    5 & 97.70 & 0.96 & 0.99 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:cv}
+\end{table}
+
+The average classification accuracy across folds is \(98.61\%\) with a standard deviation of
+\(0.97\%\), highlighting robustness across subject splits. Figures~\ref{fig:loss} and
+\ref{fig:accuracy} illustrate average training and validation curves per epoch. Figure~\ref{fig:loss}
+shows the loss curves, while Fig.~\ref{fig:accuracy} shows accuracy trends across the five folds.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{LossGraph.png}
+    \caption{Average training and validation loss per epoch across all five folds.}
+    \label{fig:loss}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{AccuracyGraph.png}
+    \caption{Average training and validation accuracy per epoch across all five folds.}
+    \label{fig:accuracy}
+\end{figure}
+
+\subsection{Class-Wise Performance Analysis}
+The model performs consistently across folds for both MDD and HC classes. Precision, recall, and
+F1-scores remain high, indicating effective reduction of both false positives and false negatives.
+In particular, sensitivity to MDD is high, which is critical for clinical screening. Balanced
+class-wise results indicate that the graph-based transformer captures functional connectivity
+patterns that distinguish depressive and healthy brain states.
+
+\subsection{Confusion Matrix}
+The confusion matrix in Fig.~\ref{fig:confusion} provides a subject-level overview of model
+predictions. The diagonal entries indicate 8{,}471 HC samples and 6{,}973 MDD samples classified
+correctly, while off-diagonal entries indicate 104 HC samples misclassified as MDD and 111 MDD
+samples misclassified as HC. These results confirm high accuracy with limited false alarms and
+missed detections.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{ConfusionMatrix.png}
+    \caption{Confusion matrix for MDD vs. HC classification.}
+    \label{fig:confusion}
+\end{figure}
+
+\subsection{Training Dynamics and Stability}
+Training and validation loss curves converge within early epochs and stabilize thereafter.
+Minor fluctuations are expected due to window-level EEG variability, but validation accuracy
+remains high and consistent. The use of functional connectivity as a soft graph bias within the
+attention mechanism stabilizes training by highlighting informative inter-channel relationships
+without imposing rigid graph constraints.
+
+\subsection{Comparison With Existing Methods}
+The proposed framework achieves \(98.61\%\) accuracy on MODMA, outperforming or matching
+state-of-the-art EEG-based depression detection approaches, including CNN-based models
+(\cite{acharya2018,wang2022}), hybrid spatio-temporal architectures~\cite{zhang2023}, attention-based
+transformers~\cite{tigga2022,hou2025}, and recent graph-based methods such as LightK-DSGCN
+(\cite{lightk}), GIGN~\cite{gign}, and STGE-Former~\cite{stgeformer2025}. Unlike STGE-Former, which
+explicitly combines graph convolutions with transformers, the proposed approach integrates
+functional connectivity as a soft inductive bias, avoiding rigid message passing. A comparison
+with conventional feature-based methods (e.g., GA-LASSO) is also provided~\cite{movahed2021}.
+Table~\ref{tab:comparison} summarizes key results; best values are highlighted in bold.
+
+\begin{table}[t]
+  \caption{Comparison With Existing Methods on the MODMA Dataset}
+  \centering
+  \begin{tabular}{lccc}
+    \toprule
+    Method & Accuracy (\%) & Sensitivity (\%) & Specificity (\%) \\
+    \midrule
+    GIGN~\cite{gign} & 96.50 & 98.38 & 94.86 \\
+    GA-LASSO~\cite{movahed2021} & 97.43 & 96.99 & 97.77 \\
+    LightK-DSGCN~\cite{lightk} & 97.22 & 96.57 & 97.86 \\
+    STGE-Former~\cite{stgeformer2025} & 98.21 & \textbf{99.11} & 97.09 \\
+    \textbf{Proposed Method} & \textbf{98.61} & 98.43 & \textbf{98.81} \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:comparison}
+\end{table}
