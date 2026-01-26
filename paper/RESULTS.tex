@@ -18,36 +18,53 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 \subsection{Evidence Artifacts}
 \textbf{Toolchain validation.} Fig.~\ref{fig:compile} shows compilation of a test program that invokes the custom instruction via inline assembly, along with successful ELF-to-HEX generation reported by the tool. This demonstrates that the custom instruction can be emitted from C code and preserved across the build pipeline without manual binary patching.
 
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_compile.png}
+  \caption{Toolchain validation: successful compilation and ELF$\rightarrow$HEX generation with a test program invoking the custom instruction.}
+  \label{fig:compile}
+\end{figure}
+
 \textbf{Firmware inspection (HEX viewer).} To support operator verification and troubleshooting, the host application provides a hex viewer for generated images. Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 
-\noindent\begin{minipage}{\linewidth}
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.9\linewidth,height=0.20\textheight,keepaspectratio]{fig_compile.png}\vspace{0.12ex}
-  \includegraphics[width=0.9\linewidth,height=0.20\textheight,keepaspectratio]{fig_hex.png}
-  \captionof{figure}{Toolchain and firmware inspection evidence: (top) compilation and ELF$\rightarrow$HEX generation with the custom instruction; (bottom) hex viewer output for the compiled image.}
-  \label{fig:compile}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_hex.png}
+  \caption{Firmware inspection: hex viewer output for the compiled image.}
   \label{fig:hex}
-\end{minipage}
+\end{figure}
 
 \textbf{Authorization and debug enablement.} The core functional requirement is that debug access is released only after successful authorization. Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
-\noindent\begin{minipage}{\linewidth}
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.9\linewidth,height=0.20\textheight,keepaspectratio]{fig_keymatch.png}\vspace{0.12ex}
-  \includegraphics[width=0.9\linewidth,height=0.20\textheight,keepaspectratio]{fig_debugenabled.png}
-  \captionof{figure}{Authorization and debug gating evidence: (top) key exchange and successful match indication; (bottom) debugger enabled after a successful match.}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_keymatch.png}
+  \caption{Authorization evidence: key exchange and successful match indication.}
   \label{fig:auth}
-\end{minipage}
+\end{figure}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_debugenabled.png}
+  \caption{Debug enablement after a successful match.}
+  \label{fig:debug-enabled}
+\end{figure}
 
 \textbf{Connection and programming workflow.} Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
-\noindent\begin{minipage}{\linewidth}
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.9\linewidth,height=0.20\textheight,keepaspectratio]{fig_connected.png}\vspace{0.12ex}
-  \includegraphics[width=0.9\linewidth,height=0.20\textheight,keepaspectratio]{fig_loadimage.png}
-  \captionof{figure}{Programming workflow evidence: (top) host tool indicates successful device connection; (bottom) host log includes \texttt{load\_image} for the compiled firmware ELF.}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_connected.png}
+  \caption{Programming workflow evidence: host tool indicates successful device connection.}
   \label{fig:program}
-\end{minipage}
+\end{figure}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_loadimage.png}
+  \caption{Programming workflow evidence: host log includes \texttt{load\_image} for the compiled firmware ELF.}
+  \label{fig:program-load}
+\end{figure}
 
 \textbf{Summary.} The collected artifacts confirm that the custom instruction compiles
 and is preserved through ELF$\rightarrow$HEX generation, hex inspection is supported,
