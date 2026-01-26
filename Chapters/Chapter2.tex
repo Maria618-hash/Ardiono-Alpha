@@ -1,0 +1,199 @@
+\chapter{Literature Review}
+\label{Chapter2}
+
+\section{Review of Existing Methods}
+Electroencephalography (EEG) has emerged as a powerful neurophysiological technique for the
+objective evaluation of Major Depressive Disorder (MDD) due to its high temporal resolution,
+non-invasive nature, and sensitivity to brain functional changes. Over the past decade, numerous
+machine learning and deep learning approaches have been proposed for EEG-based depression
+detection. These methods can be broadly categorized into three groups: convolutional neural
+network (CNN)-based models, attention and transformer-based architectures, and graph-based learning
+frameworks. This section reviews representative works from each category, highlights their
+limitations, and motivates the proposed graph-enhanced transformer with soft connectivity bias.
+
+\subsection{CNN-Based EEG Depression Detection}
+Early applications of deep learning in medical diagnostics were predominantly based on CNNs, which
+were employed for the automatic extraction of spatial and spectral features from multi-channel EEG
+signals. Acharya \emph{et al.}~\cite{acharya2018} demonstrated that CNNs trained on minimally
+processed EEG data could outperform traditional classifiers relying on handcrafted features for
+depression screening.
+
+Jiang and colleagues~\cite{jiang2021eeg} put forward a spatial feature enhancement framework that
+represents inter-electrode spatial relationships and thereby enhances the classification of
+depression. Through the merging of spatial mapping with machine learning classifiers, their
+research proved that the use of electrode topology results in more distinguishing representations
+than using independently treated EEG channels. This exposes the drawback of earlier CNN-based
+models which depend purely on grid-like channel arrangements without explicit spatial awareness.
+
+Following this direction, Seal \emph{et al.} introduced DeprNet~\cite{seal2021}, a CNN-based
+framework that improved robustness by directly learning representations from noisy raw EEG signals.
+Subsequently, CNN-based models were extended to multi-disorder diagnosis tasks, including
+depression and schizophrenia, confirming their applicability across psychiatric
+conditions~\cite{wang2022}.
+
+Despite their effectiveness, CNN-based approaches are inherently constrained by local receptive
+fields and often treat EEG channels as grid-like structures. This design limits their ability to
+capture long-range inter-channel dependencies that are critical for understanding large-scale
+brain dynamics. To mitigate this limitation, spatio-temporal fusion strategies have been proposed,
+combining CNNs with temporal modeling components to jointly represent spatial and sequential EEG
+characteristics~\cite{zhang2023}.
+
+Specialized CNN architectures have also been used to extract robust features from noisy and
+nonlinear EEG signals. He \emph{et al.}~\cite{he2023hmt} introduced the HMT model, a CNN-based
+framework that is capable of dealing with non-stationary and noise-corrupted EEG data. Xue
+\emph{et al.}~\cite{xue2022feature} also used deep learning along with feature extraction techniques
+to improve EEG classification performance. These methods, while able to provide robustness and
+accuracy, at the same time focus primarily on channel-level representations and do not take into
+account the inter-regional interactions that are known to be disrupted in depressive disorders.
+
+The use of hybrid deep learning architectures has been studied to characterize spatial and temporal
+EEG features together. Qayyum \emph{et al.}~\cite{qayyum2020hybrid} put forward a combined
+deep--shallow network that merges convolutional layers with gated recurrent units (GRUs) to analyze
+EEG signals for both spatial patterns and temporal dynamics. Their findings show that the
+application of recurrent parts alongside CNNs improves the performance of depression assessment,
+especially when time-related factors have diagnostic importance. Still, hybrid models lack the
+means to clearly display brain connectivity, which makes them less interpretable in terms of
+neurophysiology.
+
+However, these hybrid models still lack an explicit mechanism to characterize brain connectivity
+networks, which are known to be altered in depression, thereby restricting their ability to fully
+exploit functional interactions.
+
+\subsection{Attention and Transformer-Based Architectures}
+Attention mechanisms were introduced to overcome the locality limitations of convolutional models
+by enabling networks to focus on informative EEG regions. Yang \emph{et al.}~\cite{yang2023}
+proposed a gated temporal-separable attention network that enhanced depression recognition by
+emphasizing discriminative EEG segments. More recently, transformer architectures have gained
+prominence due to their self-attention mechanism, which is capable of modeling long-range temporal
+dependencies. Tigga and Garg~\cite{tigga2022} showed that transformer-based attention models
+outperform recurrent architectures in EEG-based depression detection by effectively capturing
+global temporal relationships.
+
+Alongside attention-based learning, interpretability has surfaced as a primary need for clinical
+acceptance of deep learning models. Yin \emph{et al.}~\cite{yin2023brainage} developed a deep
+learning framework that is anatomically interpretable, connecting learned representations with
+recognized brain regions. Their research was primarily centered on brain age estimation, yet it
+proves the importance of anatomical constraints for increasing model interpretability and
+maintaining clinical significance. These methods highlight the necessity of explainable
+representations in the application of deep learning to neuropsychiatric disorders, depression
+being one of them.
+
+Research efforts have also focused on developing lightweight and multi-scale transformer
+architectures to balance performance and computational efficiency. Hou \emph{et al.}~\cite{hou2025}
+proposed a convolutional transformer that achieved competitive results while maintaining low
+complexity, making it suitable for practical applications. Similarly, Ying \emph{et al.}~\cite{ying2024}
+introduced an EEG-driven attention model that improved feature learning and generalization across
+subjects. Although transformer-based approaches effectively model temporal dependencies, most
+existing methods process EEG channels independently or concatenate features across channels,
+without explicitly incorporating inter-regional functional connectivity.
+
+Recurrent neural networks have also been studied for explainability. Zhang \emph{et al.}~\cite{zhang2024rnn}
+proposed an explainable and generalizable RNN framework that differentiates human brain states from
+EEG signals. Their approach marks the important time sequences based on which classification took
+place, making the decision process easier to interpret while maintaining performance. However,
+recurrent and attention-based models do not provide explicit representations of functional
+connectivity between EEG channels.
+
+\subsection{Graph-Based Learning for EEG Depression Detection}
+Graph neural networks (GNNs) provide a natural framework for modeling EEG signals by representing
+electrodes as nodes and functional or spatial relationships as edges. Chen \emph{et al.}~\cite{chen2022}
+proposed a self-attention graph pooling approach that leveraged EEG topological structures during
+learning, leading to improved depression detection performance. Other studies have demonstrated
+that graph convolutional networks can effectively exploit spatial information and inter-channel
+relationships, outperforming conventional CNN- and RNN-based models~\cite{wang2024gctnet}.
+
+Graph-based learning with explainability has gained traction for EEG-based depression recognition.
+Shen \emph{et al.}~\cite{shen2023explainable} proposed an explainable graph convolutional network
+that represents EEG channels as graph nodes and connects them through functional relationships.
+The proposed method not only yielded classification performance comparable to the best methods but
+also highlighted the brain areas and connections that played a role in recognizing depression.
+This result confirms that graph-based models are appropriate for illustrating the network-level EEG
+disorder in MDD.
+
+Recent research has further explored adaptive and temporal graph learning techniques to capture
+dynamic brain connectivity patterns. Luo \emph{et al.}~\cite{luo2023} suggested that adaptive graph
+structures learned during training can enhance recognition of subject-specific connectivity
+patterns. Time--frequency-aware graph learning methods, such as TFAGL~\cite{xu2025}, incorporate
+spectral dynamics into graph representations, improving robustness to EEG noise and inter-subject
+variability. Graph autoencoders have also been employed to embed functional brain networks into
+compact latent representations, offering improved interpretability for MDD diagnosis~\cite{noman2024}.
+Despite these advances, many graph-based approaches rely on hard graph constructions or explicit
+graph convolution operations, which impose strict topological constraints. Such methods are highly
+sensitive to noise in functional connectivity estimation and are prone to overfitting, particularly
+when training data are limited or connectivity measures are unreliable due to short temporal
+windows.
+
+Deep learning frameworks have been used to analyze several neuropsychiatric disorders at the same
+time. Zhang~\cite{zhang2024iccece} studied identification of schizophrenia and depression together
+through EEG-based deep learning models and tested cross-disorder representation. On the same line,
+Hisana Thasneem \emph{et al.}~\cite{thasneem2023classification} compared the performance of deep
+learning frameworks for EEG signal classification of neurological disorders. These investigations
+show that deep learning power for EEG analysis is diverse, but disorder-specific modeling strategies
+that depict distinctive connectivity patterns of depression should be used.
+
+\section{Comparative Analysis of Existing Studies}
+A comparative study of existing EEG-based depression detection methods shows a wide variety of
+models, including convolutional and recurrent neural networks, as well as graph structures and
+transformers. The main differences between the various methods are in the EEG signal
+representation, the ability to detect spatial and temporal dependencies, and the incorporation of
+neuroscientific theories. Typically, CNNs are used for spatial feature extraction, while recurrent
+models and attention-based techniques are used for temporal dynamics across EEG segments. Recently,
+graph-based learning has been used to capture inter-channel relationships explicitly through
+functional connectivity measures.
+
+Many existing methods are often using static connectivity graphs as a basis or applying attention
+mechanisms that are purely data-driven. Thus, their ability to grasp and adapt to changes in the
+brain network associated with depression suffers greatly. Factors like data selection, validation
+strategies per subject, and performance metrics differ across studies and make direct comparisons
+difficult. To overcome this challenge, a synthesis matrix is provided as a tool to compare previous
+studies by feature representation, model architecture, evaluation protocol, and reported
+limitations, revealing the most important trends and gaps in research. A comprehensive analysis of
+the reviewed studies is provided in Table~\ref{tab:literature}.
+
+\begin{table}[ht]
+\centering
+\caption{Synthesis Matrix of Selected EEG-based Depression Detection Studies}
+\label{tab:literature}
+\begin{tabular}{|c|l|l|l|}
+\hline
+No. & Authors & Methodology \\ \hline
+1 & Wang et al. (2022) & CNN \\ \hline
+2 & Zhang et al. (2023) & Spatial--Temporal NN \\ \hline
+3 & Yang et al. (2023) & Attention Network \\ \hline
+4 & Tigga \& Garg (2022) & Transformer + GRU \\ \hline
+5 & Hou et al. (2025) & Lightweight Conv-Transformer \\ \hline
+6 & Ying et al. (2024) & Attention Model (EDT) \\ \hline
+7 & Earl et al. (2024) & ML + FC Features \\ \hline
+8 & Chen et al. (2022) & Graph Pooling Network \\ \hline
+9 & Luo et al. (2023) & Adaptive Temporal GNN \\ \hline
+10 & Wang et al. (2024) & Graph Convolution + Transformer\\ \hline
+11 & Xu et al. (2025) & Time--Frequency Agent Graph Learning \\ \hline
+12 & Noman et al. (2024) & Graph Autoencoder \\ \hline
+13 & STGE-Former (2025) & Graph-Enhanced Transformer \\ \hline
+14 & LightK-DSGCN (2023) & Dual-Stream GCN \\ \hline
+15 & Yang et al. (2023) & FC Network + Graph Regularization \\ \hline
+16 & Miljevic et al. (2023) & Systematic Review (FC) \\ \hline
+17 & Boby \& Veerasingam (2025) & ML + Cognitive Biomarkers \\ \hline
+18 & Elnaggar et al. (2025) & Comprehensive Review \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Motivation for Graph-Enhanced Transformers with Soft Connectivity Bias}
+Recently, hybrid models combining graph learning and transformer architectures have shown promising
+results in EEG-based depression detection. STGE-Former~\cite{stgeformer2025} represents a notable
+example that integrates spatial--temporal graph representations with transformer-based modeling.
+However, STGE-Former and similar approaches still rely on explicit graph convolution operations,
+making their performance heavily dependent on the accuracy of the constructed graphs. While hard
+graph enforcement introduces strong structural constraints, incorporating graph information as a
+soft bias within the transformer attention mechanism provides a more flexible alternative.
+
+\section{Conclusion}
+By treating functional connectivity as prior information rather than a fixed structure, the
+attention mechanism can adaptively emphasize, down-weight, or ignore connections based on their
+relevance. This design is particularly well suited for EEG-based depression detection, where
+functional connectivity estimates can vary significantly across time windows and subjects.
+Motivated by these observations, this work proposes a graph-enhanced transformer framework that
+integrates Pearson correlation-based functional connectivity as a soft attention bias. This
+approach aims to balance topological awareness with model flexibility, addressing key limitations
+of existing CNN-, transformer-, and GNN-based methods while improving generalization in subject-wise
+evaluation settings.
