@@ -20,10 +20,10 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \textbf{Firmware inspection (HEX viewer).} To support operator verification and troubleshooting, the host application provides a hex viewer for generated images. Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_compile.png}\vspace{0.2ex}
-  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_hex.png}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_compile.png}\vspace{0.15ex}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_hex.png}
   \caption{Toolchain and firmware inspection evidence: (top) compilation and ELF$\rightarrow$HEX generation with the custom instruction; (bottom) hex viewer output for the compiled image.}
   \label{fig:compile}
   \label{fig:hex}
@@ -31,20 +31,20 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \textbf{Authorization and debug enablement.} The core functional requirement is that debug access is released only after successful authorization. Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_keymatch.png}\vspace{0.2ex}
-  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_debugenabled.png}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_keymatch.png}\vspace{0.15ex}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_debugenabled.png}
   \caption{Authorization and debug gating evidence: (top) key exchange and successful match indication; (bottom) debugger enabled after a successful match.}
   \label{fig:auth}
 \end{figure}
 
 \textbf{Connection and programming workflow.} Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_connected.png}\vspace{0.2ex}
-  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_loadimage.png}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_connected.png}\vspace{0.15ex}
+  \includegraphics[width=0.9\linewidth,height=0.22\textheight,keepaspectratio]{fig_loadimage.png}
   \caption{Programming workflow evidence: (top) host tool indicates successful device connection; (bottom) host log includes \texttt{load\_image} for the compiled firmware ELF.}
   \label{fig:program}
 \end{figure}
