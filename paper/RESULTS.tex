@@ -18,46 +18,47 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 \subsection{Evidence Artifacts}
 \textbf{Toolchain validation.} Fig.~\ref{fig:compile} shows compilation of a test program that invokes the custom instruction via inline assembly, along with successful ELF-to-HEX generation reported by the tool. This demonstrates that the custom instruction can be emitted from C code and preserved across the build pipeline without manual binary patching.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.95\textwidth]{fig_compile.png}
+  \includegraphics[width=0.9\linewidth]{fig_compile.png}
   \caption{Toolchain validation: successful compilation and ELF$\rightarrow$HEX generation with a test program invoking the custom instruction.}
   \label{fig:compile}
 \end{figure*}
 
 \textbf{Firmware inspection (HEX viewer).} To support operator verification and troubleshooting, the host application provides a hex viewer for generated images. Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.95\textwidth]{fig_hex.png}
+  \includegraphics[width=0.9\linewidth]{fig_hex.png}
   \caption{Firmware inspection: hex viewer output for the compiled image.}
   \label{fig:hex}
 \end{figure*}
 
 \textbf{Authorization and debug enablement.} The core functional requirement is that debug access is released only after successful authorization. Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.95\textwidth]{fig_keymatch.png}\vspace{0.25ex}
-  \includegraphics[width=0.95\textwidth]{fig_debugenabled.png}
+  \includegraphics[width=0.9\linewidth]{fig_keymatch.png}\vspace{0.2ex}
+  \includegraphics[width=0.9\linewidth]{fig_debugenabled.png}
   \caption{Authorization and debug gating evidence: (top) key exchange and successful match indication; (bottom) debugger enabled after a successful match.}
   \label{fig:auth}
 \end{figure*}
 
 \textbf{Connection and programming workflow.} Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
   \centering
-  \includegraphics[width=0.95\textwidth]{fig_connected.png}\vspace{0.25ex}
-  \includegraphics[width=0.95\textwidth]{fig_loadimage.png}
+  \includegraphics[width=0.9\linewidth]{fig_connected.png}\vspace{0.2ex}
+  \includegraphics[width=0.9\linewidth]{fig_loadimage.png}
   \caption{Programming workflow evidence: (top) host tool indicates successful device connection; (bottom) host log includes \texttt{load\_image} for the compiled firmware ELF.}
   \label{fig:program}
 \end{figure*}
 
 \textbf{Summary.} Table~\ref{tab:results-summary} summarizes observed behaviors supported by the collected evidence.
 
-\begin{table*}[!t]
+\begin{table}[t]
   \centering
+  \footnotesize
   \caption{Functional validation summary from collected artifacts.}
   \label{tab:results-summary}
   \begin{tabular}{@{}ll@{}}
