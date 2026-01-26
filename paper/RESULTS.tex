@@ -22,8 +22,8 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.9\linewidth]{fig_compile.png}\vspace{0.2ex}
-  \includegraphics[width=0.9\linewidth]{fig_hex.png}
+  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_compile.png}\vspace{0.2ex}
+  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_hex.png}
   \caption{Toolchain and firmware inspection evidence: (top) compilation and ELF$\rightarrow$HEX generation with the custom instruction; (bottom) hex viewer output for the compiled image.}
   \label{fig:compile}
   \label{fig:hex}
@@ -33,8 +33,8 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.9\linewidth]{fig_keymatch.png}\vspace{0.2ex}
-  \includegraphics[width=0.9\linewidth]{fig_debugenabled.png}
+  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_keymatch.png}\vspace{0.2ex}
+  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_debugenabled.png}
   \caption{Authorization and debug gating evidence: (top) key exchange and successful match indication; (bottom) debugger enabled after a successful match.}
   \label{fig:auth}
 \end{figure}
@@ -43,8 +43,8 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=0.9\linewidth]{fig_connected.png}\vspace{0.2ex}
-  \includegraphics[width=0.9\linewidth]{fig_loadimage.png}
+  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_connected.png}\vspace{0.2ex}
+  \includegraphics[width=0.9\linewidth,height=0.24\textheight,keepaspectratio]{fig_loadimage.png}
   \caption{Programming workflow evidence: (top) host tool indicates successful device connection; (bottom) host log includes \texttt{load\_image} for the compiled firmware ELF.}
   \label{fig:program}
 \end{figure}
@@ -53,7 +53,8 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \noindent\begin{minipage}{\linewidth}
   \centering
-  \footnotesize
+  \small
+  \setlength{\tabcolsep}{3pt}
   \captionof{table}{Functional validation summary from collected artifacts.}
   \label{tab:results-summary}
   \begin{tabular}{@{}ll@{}}
