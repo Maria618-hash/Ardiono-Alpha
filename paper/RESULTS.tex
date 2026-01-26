@@ -20,7 +20,7 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \textbf{Firmware inspection (HEX viewer).} To support operator verification and troubleshooting, the host application provides a hex viewer for generated images. Fig.~\ref{fig:hex} shows an example view of the generated hex contents.
 
-\begin{figure*}[t]
+\begin{figure*}[!b]
   \centering
   \begin{minipage}{0.49\textwidth}
     \centering
@@ -37,7 +37,7 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \textbf{Authorization and debug enablement.} The core functional requirement is that debug access is released only after successful authorization. Fig.~\ref{fig:auth} summarizes the authorization flow evidence: (top) key exchange and matching indication in the application log, and (bottom) the resulting debugger enablement after a successful match.
 
-\begin{figure*}[t]
+\begin{figure*}[!b]
   \centering
   \begin{minipage}{0.49\textwidth}
     \centering
@@ -53,7 +53,7 @@ Evaluation was conducted at two levels: (i) \emph{toolchain-level validation} co
 
 \textbf{Connection and programming workflow.} Fig.~\ref{fig:program} summarizes the programming workflow evidence: (top) a successful connection state, and (bottom) a programming session log including the \texttt{load\_image} operation for a firmware ELF.
 
-\begin{figure*}[t]
+\begin{figure*}[!b]
   \centering
   \begin{minipage}{0.49\textwidth}
     \centering
