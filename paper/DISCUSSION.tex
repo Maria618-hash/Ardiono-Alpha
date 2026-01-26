@@ -21,23 +21,23 @@ The proposed approach complements these lines by binding authorization to an ISA
 primitive that gates execution and debug on-device. Table~\ref{tab:discussion-positioning}
 summarizes the positioning.
 
-\begin{table*}[t]
+\begin{table}[t]
   \centering
   \footnotesize
-  \setlength{\tabcolsep}{4pt}
+  \setlength{\tabcolsep}{2pt}
   \caption{Positioning of the proposed approach against prior work.}
   \label{tab:discussion-positioning}
-  \begin{tabular}{@{}p{3.0cm}p{5.9cm}p{5.9cm}@{}}
+  \begin{tabular}{@{}p{2.2cm}p{3.0cm}p{3.0cm}@{}}
     \toprule
     \textbf{Line of work} & \textbf{Representative focus} & \textbf{Limitation addressed here} \\
     \midrule
-    Secure boot & Boot-time image authentication and measured boot & Post-boot debug/program access remains exposed \\
-    Debug security & JTAG authentication and interface hardening & Authorization not tied to execution flow \\
-    TEEs / minimal TCB & Isolation and trusted execution environments & Does not gate invasive debug by default \\
-    Attestation & Runtime integrity and control-flow evidence & Provides evidence, not access control \\
-    Proposed approach & ISA-triggered, device-local authorization & Gating enforced in hardware and toolchain artifacts \\
+    Secure boot & Boot-time image authentication & Post-boot debug/program access remains exposed \\
+    Debug security & JTAG authentication & Authorization not tied to execution flow \\
+    TEEs / minimal TCB & Isolation / TEEs & Does not gate invasive debug by default \\
+    Attestation & Runtime integrity evidence & Provides evidence, not access control \\
+    Proposed approach & ISA-triggered authorization & Gating enforced in hardware and toolchain artifacts \\
     \bottomrule
   \end{tabular}
-\end{table*}
+\end{table}
 \FloatBarrier
 
