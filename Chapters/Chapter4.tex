@@ -1,120 +1,97 @@
-\chapter{Proposed Graph-Based Transformer Model for Depression Detection}
+\chapter{Implementation and Evaluation}
 \label{chapter4}
 
-\section{Experimental Results}
+\section{Implementation Overview}
+This chapter details the implementation of the authorization mechanism and the evaluation
+artifacts used to validate end-to-end enforcement. The implementation spans three layers:
+(i) ISA extension and decode/execute integration for the \texttt{kc} instruction, (ii) a
+verification datapath with protected key storage and an Authenticator FSM, and (iii) host
+toolchain and application support for compilation, inspection, authorization exchange, and
+programming.
 
-\subsection{Experimental Setup}
-The proposed model was built using the PyTorch framework and trained on a CUDA-enabled GPU to
-accelerate the learning process. EEG data from the MODMA dataset were divided into fixed-length
-windows, yielding 15{,}659 EEG windows with shape \(32 \times 256\) (channels \(\times\) time
-samples). The optimized set of 32 EEG channels was kept uniform across all experiments. A
-5-fold subject-wise cross-validation strategy was used, where subjects were split into five
-non-overlapping folds. In each fold, one subject group was used for testing and the remaining
-subjects were used for training and validation. This protocol prevents leakage of EEG windows
-from the same subject across train and test sets. Training ran for 20 epochs per fold in a
-supervised learning setting. Model optimization used backpropagation with a binary classification
-loss, and validation performance was monitored to assess convergence and generalization.
-
-\subsection{Evaluation Protocol}
-Model performance was assessed at the subject level by aggregating window-level predictions for
-each subject. This aligns with clinical practice where diagnosis is performed at the subject
-level rather than on short EEG segments. The evaluation metrics include accuracy, precision,
-recall (sensitivity), and specificity to provide a balanced assessment of performance for both
-MDD and healthy control (HC) subjects.
-
-\subsection{Cross-Validation Performance}
-Results from five-fold subject-wise cross-validation are summarized in
-Table~\ref{tab:cv}. The proposed model demonstrates consistently high accuracy and stable
-performance across folds, indicating strong generalization ability.
-
-\begin{table}[t]
-  \caption{Results of Five-Fold Subject-Wise Cross-Validation}
+\begin{table}[H]
   \centering
-  \begin{tabular}{cccc}
+  \caption{Implementation components}
+  \label{tab:impl-components}
+  \begin{tabular}{@{}p{3.2cm}p{8.8cm}@{}}
     \toprule
-    Fold & Accuracy (\%) & Sensitivity & Specificity \\
+    \textbf{Component} & \textbf{Implementation details} \\
     \midrule
-    1 & 97.70 & 1.00 & 0.96 \\
-    2 & 98.02 & 0.96 & 1.00 \\
-    3 & 100.00 & 1.00 & 1.00 \\
-    4 & 99.55 & 1.00 & 0.99 \\
-    5 & 97.70 & 0.96 & 0.99 \\
+    ISA extension & Custom \texttt{kc} opcode and decode path; I-type format \\
+    Verification datapath & Constant-time comparator; protected NVM access \\
+    Authenticator FSM & \textsf{LOCKED}/\textsf{VERIFY}/\textsf{AUTHORIZED}/\textsf{HALT} \\
+    Debug gating & \texttt{debug\_enable} released only on match \\
+    Toolchain & GCC/binutils support for emitting \texttt{kc} \\
+    Host application & Compile, hex view, key exchange, connect, program \\
     \bottomrule
   \end{tabular}
-  \label{tab:cv}
 \end{table}
 
-The average classification accuracy across folds is \(98.61\%\) with a standard deviation of
-\(0.97\%\), highlighting robustness across subject splits. Figures~\ref{fig:loss} and
-\ref{fig:accuracy} illustrate average training and validation curves per epoch. Figure~\ref{fig:loss}
-shows the loss curves, while Fig.~\ref{fig:accuracy} shows accuracy trends across the five folds.
+\section{ISA Extension and Firmware Support}
+The custom instruction \texttt{kc} is introduced as an I-type instruction with an immediate
+field that conveys a token fragment. The decode/execute path recognizes the opcode pattern and
+forwards operands and context to the verification datapath. The instruction is emitted by the
+toolchain and preserved through compilation and ELF$\rightarrow$HEX conversion, enabling
+inspection and audit in build artifacts.
+
+\section{Protected Key Storage and Verification}
+Authorization keys are provisioned into protected non-volatile memory that is not mapped into
+the normal load/store address space. Verification is performed by a constant-time comparator,
+which outputs a one-bit decision \texttt{match} without exposing the reference value. The
+Authenticator FSM consumes this decision to gate execution and debug enablement.
+
+\section{Host Workflow and Authorization Exchange}
+The host workflow consists of compilation, hex inspection, authorization exchange over UART,
+device connection, and image programming. Authorization uses a short, explicit sequence
+(Start, Key-1..Key-3, Enable, End). The host application logs programming events and key
+match results, supporting traceability and audit.
+
+\section{Evaluation Setup}
+Evaluation uses toolchain- and system-level artifacts to confirm correct instruction emission,
+authorization enforcement, and gating behavior. Evidence includes compilation logs, generated
+HEX images, key match logs, and programming workflow records.
+
+\section{Results and Evidence Artifacts}
+Toolchain validation confirms that the custom instruction is emitted from C and preserved through
+ELF$\rightarrow$HEX generation. Fig.~\ref{fig:compile} shows compilation and HEX generation; Fig.~\ref{fig:hex}
+shows the hex viewer for the generated image. Fig.~\ref{fig:auth} provides evidence of key exchange
+and successful authorization followed by debug enablement. Fig.~\ref{fig:program} shows successful
+device connection and a programming log that includes \texttt{load\_image}.
 
 \begin{figure}[t]
-    \centering
-    \includegraphics[width=\linewidth]{LossGraph.png}
-    \caption{Average training and validation loss per epoch across all five folds.}
-    \label{fig:loss}
-\end{figure}
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\linewidth]{AccuracyGraph.png}
-    \caption{Average training and validation accuracy per epoch across all five folds.}
-    \label{fig:accuracy}
-\end{figure}
-
-\subsection{Class-Wise Performance Analysis}
-The model performs consistently across folds for both MDD and HC classes. Precision, recall, and
-F1-scores remain high, indicating effective reduction of both false positives and false negatives.
-In particular, sensitivity to MDD is high, which is critical for clinical screening. Balanced
-class-wise results indicate that the graph-based transformer captures functional connectivity
-patterns that distinguish depressive and healthy brain states.
-
-\subsection{Confusion Matrix}
-The confusion matrix in Fig.~\ref{fig:confusion} provides a subject-level overview of model
-predictions. The diagonal entries indicate 8{,}471 HC samples and 6{,}973 MDD samples classified
-correctly, while off-diagonal entries indicate 104 HC samples misclassified as MDD and 111 MDD
-samples misclassified as HC. These results confirm high accuracy with limited false alarms and
-missed detections.
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\linewidth]{ConfusionMatrix.png}
-    \caption{Confusion matrix for MDD vs. HC classification.}
-    \label{fig:confusion}
-\end{figure}
-
-\subsection{Training Dynamics and Stability}
-Training and validation loss curves converge within early epochs and stabilize thereafter.
-Minor fluctuations are expected due to window-level EEG variability, but validation accuracy
-remains high and consistent. The use of functional connectivity as a soft graph bias within the
-attention mechanism stabilizes training by highlighting informative inter-channel relationships
-without imposing rigid graph constraints.
-
-\subsection{Comparison With Existing Methods}
-The proposed framework achieves \(98.61\%\) accuracy on MODMA, outperforming or matching
-state-of-the-art EEG-based depression detection approaches, including CNN-based models
-(\cite{acharya2018,wang2022}), hybrid spatio-temporal architectures~\cite{zhang2023}, attention-based
-transformers~\cite{tigga2022,hou2025}, and recent graph-based methods such as LightK-DSGCN
-(\cite{lightk}), GIGN~\cite{gign}, and STGE-Former~\cite{stgeformer2025}. Unlike STGE-Former, which
-explicitly combines graph convolutions with transformers, the proposed approach integrates
-functional connectivity as a soft inductive bias, avoiding rigid message passing. A comparison
-with conventional feature-based methods (e.g., GA-LASSO) is also provided~\cite{movahed2021}.
-Table~\ref{tab:comparison} summarizes key results; best values are highlighted in bold.
-
-\begin{table}[t]
-  \caption{Comparison With Existing Methods on the MODMA Dataset}
   \centering
-  \begin{tabular}{lccc}
-    \toprule
-    Method & Accuracy (\%) & Sensitivity (\%) & Specificity (\%) \\
-    \midrule
-    GIGN~\cite{gign} & 96.50 & 98.38 & 94.86 \\
-    GA-LASSO~\cite{movahed2021} & 97.43 & 96.99 & 97.77 \\
-    LightK-DSGCN~\cite{lightk} & 97.22 & 96.57 & 97.86 \\
-    STGE-Former~\cite{stgeformer2025} & 98.21 & \textbf{99.11} & 97.09 \\
-    \textbf{Proposed Method} & \textbf{98.61} & 98.43 & \textbf{98.81} \\
-    \bottomrule
-  \end{tabular}
-  \label{tab:comparison}
-\end{table}
+  \includegraphics[width=0.95\linewidth]{figures/fig_compile.png}
+  \caption{Toolchain validation: compilation and ELF$\rightarrow$HEX generation with the custom instruction.}
+  \label{fig:compile}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_hex.png}
+  \caption{HEX inspection: generated image viewed in the host application.}
+  \label{fig:hex}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_keymatch.png}
+  \vspace{0.3ex}
+  \includegraphics[width=0.95\linewidth]{figures/fig_debugenabled.png}
+  \caption{Authorization evidence: key match followed by debug enablement.}
+  \label{fig:auth}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_connected.png}
+  \vspace{0.3ex}
+  \includegraphics[width=0.95\linewidth]{figures/fig_loadimage.png}
+  \caption{Programming workflow evidence: successful connection and image load.}
+  \label{fig:program}
+\end{figure}
+
+\section{Summary}
+The implementation demonstrates end-to-end enforceability: the custom instruction is emitted by
+the toolchain, authorization is verified against protected key storage, and execution/debug access
+is gated by device-local policy. The collected artifacts confirm feasibility and operational
+integration with the host workflow.
