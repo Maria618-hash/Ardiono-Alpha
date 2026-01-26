@@ -27,7 +27,28 @@ Fig.~\ref{fig:arch-flow} summarizes the end-to-end architecture and the interact
 
 \subsection{Authorization Dataflow (Key Sequencing over UART)}
 \label{subsec:auth-dataflow}
-The authorization protocol is organized as a short, explicit sequence transmitted over UART prior to enabling privileged operation. As depicted in Fig.~\ref{fig:arch-flow}, the host sends a control sequence (Start $\rightarrow$ Key-1 $\rightarrow$ Key-2 $\rightarrow$ Key-3 $\rightarrow$ Enable $\rightarrow$ End). The Authenticator and compare logic validate keys against protected values stored in flash. Upon successful comparison (\texttt{True}), the design enables the debug unit and releases execution into the main code path. In addition, the custom instruction \texttt{kc} provides an ISA-visible trigger that couples authorization state to the program image and execution context, supporting compiler-integrated enforcement (opcode + immediate field as shown in the diagram).
+The authorization protocol is organized as a short, explicit sequence transmitted over UART prior to enabling privileged operation. As depicted in Fig.~\ref{fig:arch-flow}, the host sends a control sequence (Start $\rightarrow$ Key-1 $\rightarrow$ Key-2 $\rightarrow$ Key-3 $\rightarrow$ Enable $\rightarrow$ End). The Authenticator and compare logic validate keys against protected values stored in flash. Upon successful comparison (\texttt{True}), the design enables the debug unit and releases execution into the main code path. In addition, the custom instruction \texttt{kc} provides an ISA-visible trigger that couples authorization state to the program image and execution context, supporting compiler-integrated enforcement (opcode + immediate field as shown in the diagram). Algorithm~\ref{alg:auth-flow} summarizes the authorization flow and gating logic.
+
+\begin{algorithm}[t]
+  \caption{Authorization flow and gating logic}
+  \label{alg:auth-flow}
+  \begin{algorithmic}[1]
+    \STATE Initialize: \(\texttt{exec\_enable}=0\), \(\texttt{debug\_enable}=0\), state=\(\textsf{LOCKED}\)
+    \STATE Await \texttt{Start} sequence over UART
+    \FOR{each key fragment in \{Key-1, Key-2, Key-3\}}
+      \STATE Compare fragment with protected NVM value
+      \IF{mismatch}
+        \STATE state=\(\textsf{HALT}\); \(\texttt{halt\_cpu}=1\); \textbf{return}
+      \ENDIF
+    \ENDFOR
+    \STATE On \(\texttt{kc\_event}\), derive token \(T\) from operands/context
+    \IF{\(T\) matches \(K\)}
+      \STATE state=\(\textsf{AUTHORIZED}\); \(\texttt{exec\_enable}=1\); \(\texttt{debug\_enable}=1\)
+    \ELSE
+      \STATE state=\(\textsf{HALT}\); \(\texttt{halt\_cpu}=1\)
+    \ENDIF
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{Key Material and Binding Model}
 \label{subsec:key-model}
