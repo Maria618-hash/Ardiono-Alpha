@@ -1,0 +1,35 @@
+\chapter{Conclusion}
+\label{chapter6}
+
+This thesis presented a hardware--software co-design for securing embedded programming and
+execution under physical-access threat models. The approach introduces a minimal ISA extension
+and a custom authorization instruction (\texttt{kc}) that triggers verification against key
+material stored in protected non-volatile memory. A constant-time comparator and an
+Authenticator FSM gate both execution and debug enablement, ensuring that privileged capabilities
+are released only after successful, device-local authorization. Integration into the toolchain
+allows the authorization primitive to be emitted and preserved through compilation, supporting
+reproducible and auditable binaries.
+
+The implementation demonstrated end-to-end enforceability across the host workflow and device
+logic. Toolchain artifacts confirmed that the custom instruction is preserved through the build
+pipeline, and host-side logs showed that key exchange precedes debug enablement. Programming
+workflow evidence demonstrated connection and image load under the intended authorization policy.
+Collectively, these results support the practicality of instruction-triggered, key-gated control
+for restricting unauthorized reflashing and invasive debugging in embedded systems.
+
+Despite the encouraging results, several limitations remain. The evaluation emphasized functional
+correctness and workflow evidence rather than a comprehensive characterization of hardware
+overheads and latency. The key verification datapath currently uses a single comparison strategy,
+and the impact of fault/glitch or side-channel attacks has not been quantified. In addition, the
+authorization protocol was evaluated on a representative workflow; broader deployment requires
+formalized provisioning procedures, recovery mechanisms, and lifecycle policy integration.
+
+Future work should therefore quantify area, power, and timing overheads across target devices,
+extend the protocol to include key rotation and revocation, and harden the verification path
+against fault injection and side-channel leakage. Additional toolchain regression tests and
+formal modeling of the FSM would further raise assurance. Finally, multi-device deployment
+studies with centralized audit policy would validate scalability and operational robustness.
+
+In summary, this thesis establishes that device-local authorization can be enforced via a minimal
+ISA extension and protected key storage, providing a practical foundation for securing embedded
+programming and debug access.
