@@ -23,6 +23,17 @@ auditable binaries. The design targets practical deployment by leveraging ISA
 extensibility (e.g., RISC-V) and maintaining compatibility with standard build flows
 (\cite{waterman2014riscv,bin2020bootrom,rv2018securebootreview}).
 
+\section{Background and Context}
+Embedded platforms commonly operate with constrained resources, long device lifetimes,
+and limited update channels. These properties increase the impact of unauthorized
+reflashing and debugging because a single compromise can persist for long periods. At
+the same time, boot-time integrity mechanisms alone do not necessarily control
+privileged actions after the system begins executing normal firmware. Device-resident
+policies that gate execution and debug enablement are therefore essential for resilient
+operation in physical-access threat models. This motivates security mechanisms that are
+anchored in hardware, integrated into the execution model, and enforceable independent
+of host-side tooling.
+
 \section{Motivation}
 Physical access threats remain common for embedded devices deployed in the field. When
 debug interfaces are exposed or weakly protected, adversaries can extract secrets,
@@ -44,6 +55,16 @@ execution and debug access on-device, (ii) keeps keys out of the normal load/sto
 path, and (iii) is integrated into the compiler/toolchain to ensure enforceability and
 auditability.
 
+\section{Threat Model and Security Requirements}
+The threat model assumes physical access to the device, including the ability to attach
+debug tools, observe firmware images, and attempt unauthorized reprogramming. The
+attacker is assumed to have the capability to replace or modify firmware unless
+explicitly prevented by on-device checks. The security requirements therefore include:
+device-local authorization prior to releasing execution and debug capability, fail-stop
+behavior on authorization failure, and key storage that is inaccessible via standard
+memory transactions. These requirements guide both the hardware datapath and the
+software/toolchain integration.
+
 \section{Scope and Objectives}
 This thesis focuses on an embedded platform with a minimal ISA extension and a
 hardware verification datapath. The scope includes: (i) definition of the custom
@@ -52,6 +73,10 @@ authenticator FSM that controls execution and debug gating, and (iv) toolchain s
 to emit and preserve the authorization primitive during compilation. The scope does
 not include full cryptographic key management at scale, advanced side-channel defenses,
 or production-grade certification workflows.
+
+The evaluation scope emphasizes functional correctness and end-to-end enforceability,
+using build artifacts and host workflow logs to demonstrate policy compliance. Detailed
+area/power overheads and formal certification are left for future work.
 
 The primary objectives are:
 \begin{itemize}
@@ -74,6 +99,29 @@ The key contributions of this thesis are:
   \item An end-to-end validation workflow demonstrating authorized programming and
         debug enablement only after successful key verification.
 \end{itemize}
+
+\section{Research Questions}
+The thesis is guided by the following research questions:
+\begin{itemize}
+  \item How can device-local authorization be enforced in a way that is visible in the
+        execution model and independent of host-side policy?
+  \item What minimal ISA extension is sufficient to trigger secure authorization while
+        preserving toolchain compatibility?
+  \item How can protected key storage and a fail-stop FSM be integrated to gate both
+        execution and debug enablement?
+  \item What evidence is sufficient to demonstrate end-to-end enforceability in a
+        practical embedded workflow?
+\end{itemize}
+
+\section{Methodology Overview}
+The methodology integrates hardware, firmware, and toolchain components. A custom
+instruction (\texttt{kc}) is added to the ISA, and the decode/execute path forwards
+operands to a constant-time verification unit. Key material is provisioned into
+protected non-volatile storage that is not memory-mapped. An Authenticator FSM gates
+execution and debug enablement based on verification outcomes. On the host side, the
+toolchain emits the authorization primitive and the application performs compilation,
+inspection, key exchange, and programming. Chapter~3 details the architecture and
+protocol, while Chapters~4 and~5 describe implementation and evaluation evidence.
 
 \section{Thesis Structure}
 The remainder of the thesis is organized as follows:

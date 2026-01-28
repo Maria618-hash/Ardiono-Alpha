@@ -14,6 +14,12 @@ device identity and measurements~\cite{jaeger2020diceharder}, with recent survey
 trade-offs across deployment models~\cite{wang2022securebootsurvey}. These lines of work provide
 boot-time authenticity but leave post-boot debug and programming access less constrained.
 
+Boot-time integrity is necessary but not sufficient when adversaries can interact with the device
+after boot. A device that verifies its initial image may still expose invasive debug functions,
+allowing memory inspection, firmware replacement, or execution control. As a result, a complete
+security posture requires post-boot authorization checks that are enforced on-device and are not
+solely host-side policies.
+
 \section{Debug Interface Security}
 Debug and test access are high-impact attack surfaces because they provide invasive control over
 execution, memory, and device state. Early work extended JTAG for at-speed debug and emulator
@@ -23,6 +29,12 @@ abused when an adversary enters privileged states~\cite{ali2014boundaryscanattac
 work adds explicit authentication to debug access, including JTAG authentication IP and
 identity-based schemes~\cite{lapeyre2022jtagauth,wang2020schnorrjtag,walimbe2014jtagaxi}. These
 approaches harden the interface but are often external to the execution model.
+
+Interface-level protection improves resilience against unauthorized debug access, yet it does not
+guarantee that debug enablement is bound to the program’s execution context. If the execution
+model does not encode an authorization primitive, policy enforcement may still be bypassed by
+attackers who replace firmware or exploit weak host workflows. This motivates mechanisms that
+couple debug enablement to ISA-level authorization and on-device state.
 
 \section{Trusted Execution and Minimal TCB Designs}
 Hardware-enforced trusted execution evolved from secure-processor and minimal-TCB designs such as
@@ -36,6 +48,12 @@ explicit, auditable interfaces~\cite{lee2020keystone}. Surveys provide broader c
 designs and assumptions~\cite{costan2017secureprocessors,ahmed2025riscvtee}, while software-root-of-
 trust work explores small, well-defined bases of trust~\cite{gligor2019establishing}.
 
+Trusted execution environments provide isolation for sensitive code and data but do not
+necessarily enforce debug gating across the broader system workflow. In many designs, debug
+access is treated as an external policy rather than a property of the execution model. The
+proposed approach complements TEEs by binding authorization to ISA-visible triggers and by
+gating debug and execution at the device level, independent of host software.
+
 \section{Runtime Integrity and Attestation}
 Beyond boot-time authenticity, runtime integrity mechanisms provide evidence of correct execution.
 Cumulative attestation kernels extend attestation by accumulating evidence across
@@ -47,6 +65,10 @@ micro-architectural variants~\cite{abera2016cflat,dessouky2017lofat,liu2019logba
 Formal verification provides high-assurance evidence for critical components, as demonstrated by
 seL4~\cite{klein2009sel4,klein2014tocs}.
 
+These mechanisms provide strong evidence of correct execution but do not directly prevent
+unauthorized programming or debug enablement. Evidence-based approaches complement access control
+but must be paired with device-local gating to prevent unauthorized operations at runtime.
+
 \section{Software-Only Hardening}
 Software protection techniques deter tampering and reverse engineering by transforming code or
 embedding secret-dependent checks. Control-Flow Integrity constrains indirect control
@@ -54,6 +76,10 @@ transfers~\cite{abadi2005cfi}, while return-oriented programming demonstrates co
 that motivate defenses for sensitive execution paths~\cite{checkoway2010rop}. Recent taxonomies
 summarize layered obfuscation techniques and security goals~\cite{tran2020layered}. These methods
 provide valuable context but do not directly enforce device-bound authorization.
+
+Software-only defenses are typically vulnerable when attackers can bypass or replace firmware.
+Without device-local authorization checks, security properties can be undermined after physical
+access or reflashing. This motivates hardware-enforced policies tied to execution state.
 
 \section{Toolchain Infrastructure and ISA Extensibility}
 Reliable low-level enforcement requires toolchain support. LLVM provides a foundation for program
@@ -63,6 +89,10 @@ supports custom instruction integration with conventional toolchains~\cite{water
 These efforts motivate ISA-level authorization mechanisms that are emitted and preserved by the
 compiler and binary utilities.
 
+Toolchain integration is essential for reproducibility and auditability. When an authorization
+primitive is emitted by the compiler, it can be verified in compiled binaries, build logs, and
+disassembly workflows, enabling policy enforcement that is consistent across deployments.
+
 \section{Summary of Research Gaps}
 Existing approaches provide strong foundations for boot integrity, debug hardening, trusted
 execution, and runtime attestation. However, many mechanisms remain external to the execution
@@ -70,3 +100,24 @@ model or rely on host-side policy. The literature indicates a need for device-lo
 that is invoked as part of execution, is bound to compiler-emitted artifacts, and keeps key
 material outside the normal memory hierarchy. This gap motivates the proposed ISA-triggered,
 key-gated authorization mechanism.
+
+\section{Comparative Summary}
+Table~\ref{tab:lit-summary} summarizes representative lines of work and highlights the
+limitations addressed by this thesis.
+
+\begin{table}[t]
+  \centering
+  \caption{Summary of related work and remaining gaps}
+  \label{tab:lit-summary}
+  \begin{tabular}{@{}p{2.7cm}p{3.8cm}p{3.8cm}@{}}
+    \toprule
+    \textbf{Line of work} & \textbf{Representative focus} & \textbf{Gap addressed here} \\
+    \midrule
+    Secure boot & Boot-time image validation & Post-boot authorization not enforced \\
+    Debug security & JTAG authentication & Not tied to execution state \\
+    TEEs / minimal TCB & Isolation of trusted code & Debug gating not enforced by default \\
+    Attestation & Evidence of runtime integrity & Evidence without access control \\
+    Toolchain support & ISA extensibility & Requires concrete authorization primitive \\
+    \bottomrule
+  \end{tabular}
+\end{table}
