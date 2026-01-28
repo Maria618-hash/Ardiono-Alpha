@@ -58,10 +58,8 @@ interface prior to authorization.
 
 \section{ISA Extension and Firmware Support}
 Chapter~3 defines the \texttt{kc} instruction semantics and encoding. This section focuses on
-implementation details, including opcode recognition in the decode/execute path and firmware
-placement within the early boot sequence. The implemented instruction is emitted by the
-toolchain and preserved through compilation and ELF$\rightarrow$HEX conversion, enabling
-inspection and audit in build artifacts.
+implementation integration: opcode recognition in the decode/execute path, firmware placement
+in early boot, and toolchain handling that preserves the instruction in build artifacts.
 
 \subsection{Opcode Allocation and Encoding}
 The encoding reserves a dedicated opcode pattern for \texttt{kc} to prevent ambiguity with
@@ -86,10 +84,9 @@ verification occurs before application code executes. This placement prevents la
 software from bypassing authorization or enabling debug before the hardware gate is released.
 
 \section{Protected Key Storage and Verification}
-The protected key store described in Chapter~3 is implemented as a dedicated NVM block that is
-not visible to the normal load/store path. Verification uses a constant-time comparator that
-produces a one-bit decision \texttt{match} without exposing the reference value. The
-Authenticator FSM consumes this decision to gate execution and debug enablement.
+Chapter~3 defines the protected key model. The implementation realizes it as a dedicated NVM
+block with a restricted access path and a constant-time comparator that produces a one-bit
+\texttt{match} signal for the Authenticator FSM.
 
 \subsection{Protected NVM Access Path}
 The protected key store is accessible only through a dedicated datapath. The CPU cannot issue
@@ -131,7 +128,7 @@ state, preventing partial initialization or unintended execution.
 \section{Host Workflow and Authorization Exchange}
 The host workflow implements the authorization sequence defined in Chapter~3 and couples it
 with compilation, hex inspection, device connection, and image programming. The host
-application logs programming events and key match results, supporting traceability and audit.
+application logs programming events and key match results for traceability and audit.
 
 \subsection{Toolchain Integration}
 The toolchain emits the \texttt{kc} instruction from C or inline assembly and preserves it
@@ -140,9 +137,9 @@ confirm the presence of the opcode, enabling operator verification without manua
 patching.
 
 \subsection{UART Protocol Handling}
-The host sends the authorization sequence as a strict message order. Delimiters (\texttt{Start}
-and \texttt{End}) are used to avoid partial or ambiguous exchanges. Any deviation from the
-expected order is treated as a protocol failure and results in a halted device.
+The implementation enforces the message ordering defined in Chapter~3 using delimiters and
+strict sequencing. Any deviation is treated as a protocol failure and results in a halted
+device.
 
 \subsection{Logging and Audit Records}
 The host logs device identifiers, toolchain metadata, and authorization outcomes for later
@@ -214,6 +211,7 @@ Evaluation results and evidence artifacts are presented in Chapter~5.
 \section{Flow Diagram}
 \begin{figure}[H]
   \centering
+  \ifdefined\tikzpicture
   \begin{tikzpicture}[
     node distance=7mm and 10mm,
     startstop/.style={rectangle, rounded corners, draw, align=center, minimum width=3.0cm, minimum height=0.7cm},
@@ -243,6 +241,12 @@ Evaluation results and evidence artifacts are presented in Chapter~5.
     \draw [line] (tokok) -- node[right]{Yes} (auth);
     \draw [line] (tokok) -- node[above]{No} (halt2);
   \end{tikzpicture}
+  \else
+  \fbox{\parbox{0.9\linewidth}{\centering
+  Flowchart requires TikZ. Add \texttt{\textbackslash usepackage\{tikz\}} and
+  \texttt{\textbackslash usetikzlibrary\{shapes.geometric,arrows.meta,positioning\}}
+  in the thesis preamble to render this diagram.}}
+  \fi
   \caption{Authorization flow and gating logic (implementation flowchart).}
   \label{fig:impl-flow}
 \end{figure}
