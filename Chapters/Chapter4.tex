@@ -58,88 +58,72 @@ interface prior to authorization.
 
 \section{ISA Extension and Firmware Support}
 Chapter~3 defines the \texttt{kc} instruction semantics and encoding. This section focuses on
-implementation integration: opcode recognition in the decode/execute path, firmware placement
-in early boot, and toolchain handling that preserves the instruction in build artifacts.
+implementation integration: wiring the opcode into decode/execute, placing the instruction in
+early boot firmware, and ensuring toolchain emission in concrete build artifacts.
 
 \subsection{Opcode Allocation and Encoding}
-The encoding reserves a dedicated opcode pattern for \texttt{kc} to prevent ambiguity with
-existing instructions. The immediate field carries a fragment of the authorization token,
-while the destination field is reserved for status or left as a placeholder. This encoding
-ensures that the instruction can be detected reliably in both the decoder and in disassembly.
+Assembler and disassembler tables are extended to recognize the reserved \texttt{kc} opcode
+defined in Chapter~3, ensuring that the instruction is emitted and displayed consistently in
+build artifacts. This avoids opcode collisions and enables straightforward audit in disassembly.
 
 \subsection{Decode and Execute Integration}
-During decode, \texttt{kc} asserts \texttt{kc\_event} and routes operand/context information to
-the verification datapath. The execution stage stalls until the comparator and FSM return a
-match result, preventing subsequent instructions from executing before authorization completes.
+The decode path asserts \texttt{kc\_event} and routes operands to the verification datapath.
+Integration ensures that the pipeline does not advance past the authorization point until the
+FSM resolves the decision and updates gating outputs.
 
 \subsection{Firmware Invocation Pattern}
-Firmware places the \texttt{kc} instruction early in the boot sequence so that authorization
-is completed before privileged operations or debug sessions are allowed. The instruction is
-invoked once per boot, and subsequent attempts are blocked by the FSM state if authorization
-has already failed.
+The boot firmware places \texttt{kc} in the startup path so that authorization occurs before
+privileged operations are enabled. Placement is handled during the BootROM build to ensure the
+instruction remains in the early-boot path.
 
 \subsection{BootROM Integration}
-The authorization instruction is placed in BootROM or an equivalent early-boot region so that
-verification occurs before application code executes. This placement prevents later-stage
-software from bypassing authorization or enabling debug before the hardware gate is released.
+BootROM integration ensures that the authorization point is executed before application code,
+preventing later-stage software from bypassing the gate.
 
 \section{Protected Key Storage and Verification}
-Chapter~3 defines the protected key model. The implementation realizes it as a dedicated NVM
-block with a restricted access path and a constant-time comparator that produces a one-bit
-\texttt{match} signal for the Authenticator FSM.
+Chapter~3 defines the protected key model. The implementation instantiates a dedicated NVM
+block, a restricted access path, and a constant-time comparator that exports only a one-bit
+\texttt{match} signal to the control logic.
 
 \subsection{Protected NVM Access Path}
-The protected key store is accessible only through a dedicated datapath. The CPU cannot issue
-direct reads or writes to this region, preventing key exposure through conventional memory
-transactions. The access interface provides only a comparison outcome to the FSM.
+The protected key store is excluded from the standard address decode and exposed only through
+the comparison interface. The CPU cannot issue conventional reads or writes to this region.
 
 \subsection{Comparator Implementation}
-The comparator processes all key fragments and accumulates a mismatch flag to avoid
-short-circuit behavior. The comparison logic is constant-time to reduce timing leakage, and
-the output is a single match bit that drives the FSM transition.
+The comparator is implemented with a mismatch accumulator to avoid early exit. A single match
+bit is exported to the FSM to drive state transitions.
 
 \subsection{Isolation Properties}
-Isolation is enforced by removing the protected key region from the architectural address
-space and by minimizing the visibility of comparator outputs. Only \texttt{match} and
-internal status flags are consumed by the FSM, preventing software from learning the key.
+Isolation is verified by the absence of a memory-mapped region and by limiting outputs to the
+match bit and internal status signals.
 
 \subsection{Key Provisioning Interface}
-The provisioning path is restricted to trusted enrollment routines and does not reuse the
-standard data memory interface. This keeps the reference key out of the normal address space
-and avoids accidental exposure through firmware updates or peripheral access.
+Provisioning is performed through a restricted enrollment path separate from normal data
+memory transactions, preventing accidental exposure during updates.
 
 \section{Authenticator FSM and Gating Implementation}
-The Authenticator FSM is implemented as a small control block with four states:
-\textsf{LOCKED}, \textsf{VERIFY}, \textsf{AUTHORIZED}, and \textsf{HALT}. State transitions are
-driven by \texttt{kc\_event} and the comparator output. The FSM asserts \texttt{exec\_enable}
-and \texttt{debug\_enable} only in the authorized state and asserts \texttt{halt\_cpu} on any
-mismatch to enforce fail-stop behavior.
+Chapter~3 specifies the FSM behavior. The implementation connects the comparator output to the
+state logic and routes the resulting gating signals to the execution and debug subsystems so
+that privileged capability is released only by on-device control.
 
 \subsection{Debug Interface Control}
-The debug interface is disabled until the FSM reaches \textsf{AUTHORIZED}. This ensures that
-debug access, memory inspection, and single-stepping are not possible prior to successful
-authorization. The gate is hardware-controlled and does not depend on software policy flags.
+The debug enable line is driven by the FSM and is not modifiable by software prior to
+authorization.
 
 \subsection{Execution Gate Enforcement}
-The execution gate prevents untrusted firmware from running if authorization fails. When the
-FSM remains in \textsf{LOCKED} or transitions to \textsf{HALT}, the CPU is held in a stopped
-state, preventing partial initialization or unintended execution.
+Execution is released only when the FSM asserts \texttt{exec\_enable}; otherwise, the CPU
+remains halted to prevent partial initialization.
 
 \section{Host Workflow and Authorization Exchange}
-The host workflow implements the authorization sequence defined in Chapter~3 and couples it
-with compilation, hex inspection, device connection, and image programming. The host
-application logs programming events and key match results for traceability and audit.
+The host workflow implements the Chapter~3 sequence and integrates build, transport, and audit
+functions. The implementation emphasizes modularity and logging for traceability.
 
 \subsection{Toolchain Integration}
-The toolchain emits the \texttt{kc} instruction from C or inline assembly and preserves it
-through linking and image generation. Build artifacts (ELF and HEX) can be inspected to
-confirm the presence of the opcode, enabling operator verification without manual binary
-patching.
+Toolchain components are configured to emit and preserve \texttt{kc} so that the opcode is
+visible in ELF and HEX artifacts without manual binary patching.
 
 \subsection{UART Protocol Handling}
-The implementation enforces the message ordering defined in Chapter~3 using delimiters and
-strict sequencing. Any deviation is treated as a protocol failure and results in a halted
-device.
+The UART parser enforces delimiters and ordering; violations trigger a halt and are logged.
 
 \subsection{Logging and Audit Records}
 The host logs device identifiers, toolchain metadata, and authorization outcomes for later

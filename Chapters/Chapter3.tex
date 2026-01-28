@@ -36,12 +36,10 @@ capabilities are released. The overall flow is summarized in Fig.~\ref{fig:metho
 \end{table}
 
 \subsection{Threat Model and Assumptions}
-The threat model assumes physical access to the device, including the ability to connect
-to debug/program interfaces and attempt firmware replacement. The goal is to prevent
-unauthorized execution and debug enablement after boot. The model does not assume a
-trusted operating system, and it treats early boot firmware as potentially adversarial
-until authorization succeeds. The design assumes the protected key region is not
-memory-mapped and can only be accessed by the verification datapath.
+The threat model and security requirements are established in Chapter~1. For the
+methodology, two implementation assumptions are critical: the protected key region is
+not memory-mapped and is accessible only via the verification datapath, and early-boot
+firmware is treated as untrusted until authorization succeeds.
 
 \subsection{System Model}
 The system model consists of a host workstation, a programming interface (UART/SPI), and a
