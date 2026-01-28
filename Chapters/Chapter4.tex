@@ -57,9 +57,9 @@ interface prior to authorization.
 \end{table}
 
 \section{ISA Extension and Firmware Support}
-The custom instruction \texttt{kc} is introduced as an I-type instruction with an immediate
-field that conveys a token fragment. The decode/execute path recognizes the opcode pattern and
-forwards operands and context to the verification datapath. The instruction is emitted by the
+Chapter~3 defines the \texttt{kc} instruction semantics and encoding. This section focuses on
+implementation details, including opcode recognition in the decode/execute path and firmware
+placement within the early boot sequence. The implemented instruction is emitted by the
 toolchain and preserved through compilation and ELF$\rightarrow$HEX conversion, enabling
 inspection and audit in build artifacts.
 
@@ -86,9 +86,9 @@ verification occurs before application code executes. This placement prevents la
 software from bypassing authorization or enabling debug before the hardware gate is released.
 
 \section{Protected Key Storage and Verification}
-Authorization keys are provisioned into protected non-volatile memory that is not mapped into
-the normal load/store address space. Verification is performed by a constant-time comparator,
-which outputs a one-bit decision \texttt{match} without exposing the reference value. The
+The protected key store described in Chapter~3 is implemented as a dedicated NVM block that is
+not visible to the normal load/store path. Verification uses a constant-time comparator that
+produces a one-bit decision \texttt{match} without exposing the reference value. The
 Authenticator FSM consumes this decision to gate execution and debug enablement.
 
 \subsection{Protected NVM Access Path}
@@ -129,10 +129,9 @@ FSM remains in \textsf{LOCKED} or transitions to \textsf{HALT}, the CPU is held 
 state, preventing partial initialization or unintended execution.
 
 \section{Host Workflow and Authorization Exchange}
-The host workflow consists of compilation, hex inspection, authorization exchange over UART,
-device connection, and image programming. Authorization uses a short, explicit sequence
-(Start, Key-1..Key-3, Enable, End). The host application logs programming events and key
-match results, supporting traceability and audit.
+The host workflow implements the authorization sequence defined in Chapter~3 and couples it
+with compilation, hex inspection, device connection, and image programming. The host
+application logs programming events and key match results, supporting traceability and audit.
 
 \subsection{Toolchain Integration}
 The toolchain emits the \texttt{kc} instruction from C or inline assembly and preserves it
@@ -215,8 +214,35 @@ Evaluation results and evidence artifacts are presented in Chapter~5.
 \section{Flow Diagram}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\linewidth]{figures/fig_arch_flow.png}
-  \caption{Implementation flow diagram: host workflow, authorization exchange, protected key
-  storage, comparator verification, and ISA-level trigger via \texttt{kc}.}
+  \begin{tikzpicture}[
+    node distance=7mm and 10mm,
+    startstop/.style={rectangle, rounded corners, draw, align=center, minimum width=3.0cm, minimum height=0.7cm},
+    process/.style={rectangle, draw, align=center, minimum width=3.5cm, minimum height=0.7cm},
+    decision/.style={diamond, draw, aspect=2, align=center, inner sep=1pt},
+    line/.style={-Stealth, line width=0.6pt},
+    font=\small
+  ]
+    \node (start) [startstop] {Start};
+    \node (init) [process, below=of start] {Init: exec\_enable=0\\debug\_enable=0, state=LOCKED};
+    \node (rx) [process, below=of init] {Receive Start sequence};
+    \node (compare) [process, below=of rx] {Compare Key-1..Key-3};
+    \node (keysok) [decision, below=of compare] {All keys match?};
+    \node (halt1) [process, right=of keysok] {HALT\\halt\_cpu=1};
+    \node (kc) [process, below=of keysok] {kc\_event:\\derive token $T$};
+    \node (tokok) [decision, below=of kc] {$T$ matches $K$?};
+    \node (auth) [process, below=of tokok] {AUTHORIZED:\\exec\_enable=1\\debug\_enable=1};
+    \node (halt2) [process, right=of tokok] {HALT\\halt\_cpu=1};
+
+    \draw [line] (start) -- (init);
+    \draw [line] (init) -- (rx);
+    \draw [line] (rx) -- (compare);
+    \draw [line] (compare) -- (keysok);
+    \draw [line] (keysok) -- node[right]{Yes} (kc);
+    \draw [line] (keysok) -- node[above]{No} (halt1);
+    \draw [line] (kc) -- (tokok);
+    \draw [line] (tokok) -- node[right]{Yes} (auth);
+    \draw [line] (tokok) -- node[above]{No} (halt2);
+  \end{tikzpicture}
+  \caption{Authorization flow and gating logic (implementation flowchart).}
   \label{fig:impl-flow}
 \end{figure}
