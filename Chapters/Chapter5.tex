@@ -24,6 +24,29 @@ authorization is required before debug enablement, and (iii) programming proceed
 successful authorization. A failed authorization must transition the FSM into an absorbing
 \textsf{HALT} state with \texttt{exec\_enable}=0 and \texttt{debug\_enable}=0.
 
+\subsection{Test Cases and Expected Outcomes}
+The evaluation uses a small set of deterministic test cases that map directly to the intended
+security policy. Each test case is executed from a clean reset to ensure that the FSM starts
+in \textsf{LOCKED}. The expected outcomes are based on the authorization protocol and the
+gating logic defined in earlier chapters.
+
+\begin{table}[t]
+  \centering
+  \caption{Functional test cases and expected outcomes.}
+  \label{tab:test-cases}
+  \begin{tabular}{@{}p{5.0cm}p{6.0cm}@{}}
+    \toprule
+    \textbf{Test case} & \textbf{Expected outcome} \\
+    \midrule
+    Valid key sequence + \texttt{kc} & \textsf{AUTHORIZED}; debug and execution enabled \\
+    Invalid key fragment & \textsf{HALT}; gates remain disabled \\
+    Missing \texttt{Start}/\texttt{End} & \textsf{HALT}; protocol violation detected \\
+    Out-of-order fragments & \textsf{HALT}; strict ordering enforced \\
+    \texttt{kc} omitted in image & No authorization; execution remains gated \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \section{Toolchain Validation}
 Fig.~\ref{fig:compile} shows a successful compilation of a test program that invokes \texttt{kc},
 followed by ELF$\rightarrow$HEX generation. The tool output confirms that the custom instruction
@@ -62,6 +85,19 @@ host-side policy.
   \label{fig:auth}
 \end{figure}
 
+\section{Fail-Stop Behavior on Mismatch}
+To validate fail-stop behavior, an invalid key fragment is injected during the authorization
+sequence. The device transitions to \textsf{HALT} and remains non-operational until reset,
+preventing iterative probing within a single session. Fig.~\ref{fig:halted} shows a halted
+device state after a mismatch.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_halted.png}
+  \caption{Fail-stop evidence: device halted after authorization mismatch.}
+  \label{fig:halted}
+\end{figure}
+
 \section{Programming Workflow Evidence}
 The host workflow includes device connection, image load, and programming. Fig.~\ref{fig:program}
 shows a successful connection state and a log entry indicating \texttt{load\_image} for the
@@ -75,6 +111,13 @@ conditions.
   \caption{Programming workflow evidence: successful connection and image load.}
   \label{fig:program}
 \end{figure}
+
+\section{Protocol Robustness Checks}
+Additional checks validate that protocol deviations do not result in partial authorization.
+Missing delimiters or out-of-order fragments reliably trigger a halt, and the host log records
+the failure event. These checks demonstrate that authorization is not only dependent on a
+correct key but also on adherence to the prescribed sequence, preventing malformed or replayed
+traffic from enabling debug.
 
 \section{Summary of Evidence}
 Table~\ref{tab:thesis-results} summarizes the functional requirements and corresponding evidence.
@@ -97,6 +140,21 @@ Table~\ref{tab:thesis-results} summarizes the functional requirements and corres
     \bottomrule
   \end{tabular}
 \end{table}
+
+\section{Reproducibility and Artifact Collection}
+All evidence was collected from deterministic tool outputs and host logs. Build artifacts
+include the compiler output, ELF$\rightarrow$HEX conversion logs, and disassembly listings that
+show the \texttt{kc} opcode at the expected program point. Host-side logs capture key exchange
+status, authorization decisions, and programming events. This collection enables repeatable
+validation without requiring specialized measurement equipment.
+
+\section{Limitations and Threats to Validity}
+The evaluation emphasizes correctness of the enforcement path rather than quantitative
+performance metrics. Timing overheads and power impact were not measured because the
+authorization sequence is executed only during boot. The security claims rely on the
+assumption that the protected NVM and comparator datapath are not subject to invasive
+modification; violating these assumptions could bypass enforcement despite correct software
+behavior.
 
 \section{Discussion of Results}
 The collected artifacts demonstrate that the authorization mechanism is enforced end-to-end:
