@@ -33,3 +33,40 @@ studies with centralized audit policy would validate scalability and operational
 In summary, this thesis establishes that device-local authorization can be enforced via a minimal
 ISA extension and protected key storage, providing a practical foundation for securing embedded
 programming and debug access.
+
+\section{Summary of Contributions}
+The work delivers three concrete contributions. First, it formalizes a device-resident
+authorization model that couples privileged operations to an ISA-visible trigger, ensuring that
+debug and execution are not released until verification is completed on-device. Second, it
+demonstrates a hardware realization with protected key storage, constant-time comparison, and a
+small control FSM that enforces fail-stop behavior. Third, it integrates this mechanism into the
+toolchain and host workflow so that authorization is part of the build and programming pipeline
+rather than an ad-hoc external policy. These contributions provide a cohesive, deployable
+approach for preventing unauthorized reflashing and invasive debug access in physically exposed
+embedded systems.
+
+\section{Operational and Deployment Considerations}
+For practical deployment, authorization must be aligned with device provisioning and lifecycle
+management. Enrollment should bind device identifiers to authorized hosts, and operational
+processes should capture audit trails for programming actions. Because authorization is enforced
+below the software stack, operational procedures must account for recovery in the event of
+operator error, key loss, or device replacement. A reliable reset path and explicit re-enrollment
+policy are therefore necessary to avoid field downtime. The approach is compatible with secure
+boot and measured boot techniques; secure boot authenticates the initial image, while the
+authorization gate constrains execution and debug enablement after boot, providing layered
+defense against both firmware replacement and invasive debugging.
+
+The methodology also aligns with industry practices that require traceability and accountability
+for firmware updates. Audit logs produced during the authorization and programming process can be
+integrated with existing asset management and compliance workflows, enabling administrators to
+verify that privileged access was granted only after successful authorization.
+
+\section{Future Research Directions}
+Several research directions follow from this work. Quantitative analysis of area, power, and
+latency overhead across multiple microcontroller classes would help establish the cost envelope
+for deployment. More comprehensive fault-injection and side-channel evaluations are needed to
+characterize residual leakage and to validate the robustness of the constant-time comparator and
+FSM design. Policy extensions, such as key rotation, revocation, and multi-operator authorization,
+would provide stronger operational flexibility. Finally, integrating the authorization model with
+formal verification tools and automated test frameworks would strengthen assurance that the gate
+remains enforced across toolchain versions and hardware revisions.
