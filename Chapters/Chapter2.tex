@@ -20,6 +20,12 @@ allowing memory inspection, firmware replacement, or execution control. As a res
 security posture requires post-boot authorization checks that are enforced on-device and are not
 solely host-side policies.
 
+Secure boot solutions also vary in their treatment of recovery and update workflows. In practice,
+field updates and maintenance operations often require temporary access to privileged interfaces,
+which can weaken security if not carefully controlled. This motivates authorization mechanisms
+that can be invoked explicitly during controlled maintenance operations rather than permanently
+unlocking debug or programming paths.
+
 \section{Debug Interface Security}
 Debug and test access are high-impact attack surfaces because they provide invasive control over
 execution, memory, and device state. Early work extended JTAG for at-speed debug and emulator
@@ -35,6 +41,11 @@ guarantee that debug enablement is bound to the program’s execution context. I
 model does not encode an authorization primitive, policy enforcement may still be bypassed by
 attackers who replace firmware or exploit weak host workflows. This motivates mechanisms that
 couple debug enablement to ISA-level authorization and on-device state.
+
+In operational environments, debug access is frequently required for diagnostics and field
+maintenance. A secure design must therefore support legitimate debugging while preventing
+unauthorized use. This is best achieved by making debug enablement a controlled, audited action
+that is tied to explicit authorization rather than an implicit configuration setting.
 
 \section{Trusted Execution and Minimal TCB Designs}
 Hardware-enforced trusted execution evolved from secure-processor and minimal-TCB designs such as
@@ -54,6 +65,11 @@ access is treated as an external policy rather than a property of the execution 
 proposed approach complements TEEs by binding authorization to ISA-visible triggers and by
 gating debug and execution at the device level, independent of host software.
 
+Minimal-TCB philosophies are particularly relevant for embedded security because they reduce the
+amount of trusted code that must be verified. However, even a minimal TCB can be undermined if
+debug or programming access is left unguarded. A device-local authorization mechanism provides a
+complementary safeguard by preventing unauthorized access regardless of higher-level isolation.
+
 \section{Runtime Integrity and Attestation}
 Beyond boot-time authenticity, runtime integrity mechanisms provide evidence of correct execution.
 Cumulative attestation kernels extend attestation by accumulating evidence across
@@ -69,6 +85,11 @@ These mechanisms provide strong evidence of correct execution but do not directl
 unauthorized programming or debug enablement. Evidence-based approaches complement access control
 but must be paired with device-local gating to prevent unauthorized operations at runtime.
 
+From an engineering standpoint, attestation is often used for remote verification and auditing,
+whereas authorization mechanisms are used for immediate enforcement. The proposed approach is
+therefore complementary: it provides a local enforcement point that can be augmented with
+attestation or measurement-based reporting when required.
+
 \section{Software-Only Hardening}
 Software protection techniques deter tampering and reverse engineering by transforming code or
 embedding secret-dependent checks. Control-Flow Integrity constrains indirect control
@@ -81,6 +102,10 @@ Software-only defenses are typically vulnerable when attackers can bypass or rep
 Without device-local authorization checks, security properties can be undermined after physical
 access or reflashing. This motivates hardware-enforced policies tied to execution state.
 
+In practice, software-only mechanisms may still be useful as secondary layers for obfuscation or
+tamper resistance, but they cannot substitute for on-device gating of debug and programming
+interfaces when physical access is a realistic threat.
+
 \section{Toolchain Infrastructure and ISA Extensibility}
 Reliable low-level enforcement requires toolchain support. LLVM provides a foundation for program
 analysis and transformation~\cite{lattner2004llvm}. Emscripten and LLBT demonstrate LLVM-based
@@ -92,6 +117,10 @@ compiler and binary utilities.
 Toolchain integration is essential for reproducibility and auditability. When an authorization
 primitive is emitted by the compiler, it can be verified in compiled binaries, build logs, and
 disassembly workflows, enabling policy enforcement that is consistent across deployments.
+
+From a deployment perspective, toolchain support also reduces operational friction: the
+authorization primitive becomes part of standard build artifacts, enabling engineering teams to
+verify policy compliance without specialized post-processing or binary patching.
 
 \section{Summary of Research Gaps}
 Existing approaches provide strong foundations for boot integrity, debug hardening, trusted
