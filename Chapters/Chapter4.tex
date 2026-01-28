@@ -27,6 +27,35 @@ programming.
   \end{tabular}
 \end{table}
 
+\subsection{Hardware--Software Partitioning}
+The implementation partitions responsibilities across hardware and software to maintain a
+small trusted computing base. Hardware components enforce authorization and gating, while
+software components prepare inputs, initiate the protocol, and maintain audit records. This
+partitioning ensures that the enforcement decision is local to the device and does not rely
+on external policy enforcement once execution begins.
+
+\subsection{Interface Signals and Control}
+Key control signals connect the ISA extension, verification datapath, and gating logic.
+These signals remain internal to the device and are not exposed through the normal debug
+interface prior to authorization.
+
+\begin{table}[H]
+  \centering
+  \caption{Implementation control signals}
+  \label{tab:impl-signals}
+  \begin{tabular}{@{}p{3.8cm}p{8.2cm}@{}}
+    \toprule
+    \textbf{Signal} & \textbf{Purpose} \\
+    \midrule
+    \texttt{kc\_event} & Trigger emitted by the custom instruction decode \\
+    \texttt{match} & Comparator result indicating key agreement \\
+    \texttt{exec\_enable} & Releases normal firmware execution \\
+    \texttt{debug\_enable} & Releases debug/program access \\
+    \texttt{halt\_cpu} & Forces fail-stop on mismatch \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \section{ISA Extension and Firmware Support}
 The custom instruction \texttt{kc} is introduced as an I-type instruction with an immediate
 field that conveys a token fragment. The decode/execute path recognizes the opcode pattern and
@@ -34,11 +63,70 @@ forwards operands and context to the verification datapath. The instruction is e
 toolchain and preserved through compilation and ELF$\rightarrow$HEX conversion, enabling
 inspection and audit in build artifacts.
 
+\subsection{Opcode Allocation and Encoding}
+The encoding reserves a dedicated opcode pattern for \texttt{kc} to prevent ambiguity with
+existing instructions. The immediate field carries a fragment of the authorization token,
+while the destination field is reserved for status or left as a placeholder. This encoding
+ensures that the instruction can be detected reliably in both the decoder and in disassembly.
+
+\subsection{Decode and Execute Integration}
+During decode, \texttt{kc} asserts \texttt{kc\_event} and routes operand/context information to
+the verification datapath. The execution stage stalls until the comparator and FSM return a
+match result, preventing subsequent instructions from executing before authorization completes.
+
+\subsection{Firmware Invocation Pattern}
+Firmware places the \texttt{kc} instruction early in the boot sequence so that authorization
+is completed before privileged operations or debug sessions are allowed. The instruction is
+invoked once per boot, and subsequent attempts are blocked by the FSM state if authorization
+has already failed.
+
+\subsection{BootROM Integration}
+The authorization instruction is placed in BootROM or an equivalent early-boot region so that
+verification occurs before application code executes. This placement prevents later-stage
+software from bypassing authorization or enabling debug before the hardware gate is released.
+
 \section{Protected Key Storage and Verification}
 Authorization keys are provisioned into protected non-volatile memory that is not mapped into
 the normal load/store address space. Verification is performed by a constant-time comparator,
 which outputs a one-bit decision \texttt{match} without exposing the reference value. The
 Authenticator FSM consumes this decision to gate execution and debug enablement.
+
+\subsection{Protected NVM Access Path}
+The protected key store is accessible only through a dedicated datapath. The CPU cannot issue
+direct reads or writes to this region, preventing key exposure through conventional memory
+transactions. The access interface provides only a comparison outcome to the FSM.
+
+\subsection{Comparator Implementation}
+The comparator processes all key fragments and accumulates a mismatch flag to avoid
+short-circuit behavior. The comparison logic is constant-time to reduce timing leakage, and
+the output is a single match bit that drives the FSM transition.
+
+\subsection{Isolation Properties}
+Isolation is enforced by removing the protected key region from the architectural address
+space and by minimizing the visibility of comparator outputs. Only \texttt{match} and
+internal status flags are consumed by the FSM, preventing software from learning the key.
+
+\subsection{Key Provisioning Interface}
+The provisioning path is restricted to trusted enrollment routines and does not reuse the
+standard data memory interface. This keeps the reference key out of the normal address space
+and avoids accidental exposure through firmware updates or peripheral access.
+
+\section{Authenticator FSM and Gating Implementation}
+The Authenticator FSM is implemented as a small control block with four states:
+\textsf{LOCKED}, \textsf{VERIFY}, \textsf{AUTHORIZED}, and \textsf{HALT}. State transitions are
+driven by \texttt{kc\_event} and the comparator output. The FSM asserts \texttt{exec\_enable}
+and \texttt{debug\_enable} only in the authorized state and asserts \texttt{halt\_cpu} on any
+mismatch to enforce fail-stop behavior.
+
+\subsection{Debug Interface Control}
+The debug interface is disabled until the FSM reaches \textsf{AUTHORIZED}. This ensures that
+debug access, memory inspection, and single-stepping are not possible prior to successful
+authorization. The gate is hardware-controlled and does not depend on software policy flags.
+
+\subsection{Execution Gate Enforcement}
+The execution gate prevents untrusted firmware from running if authorization fails. When the
+FSM remains in \textsf{LOCKED} or transitions to \textsf{HALT}, the CPU is held in a stopped
+state, preventing partial initialization or unintended execution.
 
 \section{Host Workflow and Authorization Exchange}
 The host workflow consists of compilation, hex inspection, authorization exchange over UART,
@@ -46,9 +134,89 @@ device connection, and image programming. Authorization uses a short, explicit s
 (Start, Key-1..Key-3, Enable, End). The host application logs programming events and key
 match results, supporting traceability and audit.
 
+\subsection{Toolchain Integration}
+The toolchain emits the \texttt{kc} instruction from C or inline assembly and preserves it
+through linking and image generation. Build artifacts (ELF and HEX) can be inspected to
+confirm the presence of the opcode, enabling operator verification without manual binary
+patching.
+
+\subsection{UART Protocol Handling}
+The host sends the authorization sequence as a strict message order. Delimiters (\texttt{Start}
+and \texttt{End}) are used to avoid partial or ambiguous exchanges. Any deviation from the
+expected order is treated as a protocol failure and results in a halted device.
+
+\subsection{Logging and Audit Records}
+The host logs device identifiers, toolchain metadata, and authorization outcomes for later
+traceability. These records provide evidence that privileged access was released only after
+successful verification.
+
+\subsection{Host Application Modules}
+The implementation uses modular host software components to separate build steps, key
+handling, transport, and auditing.
+
+\begin{table}[H]
+  \centering
+  \caption{Host workflow modules}
+  \label{tab:impl-host-modules}
+  \begin{tabular}{@{}p{3.8cm}p{8.2cm}@{}}
+    \toprule
+    \textbf{Module} & \textbf{Function} \\
+    \midrule
+    Build pipeline & Invokes compiler, linker, and HEX generation \\
+    Key manager & Derives and stores device-bound authorization keys \\
+    UART transport & Transmits Start/Key/Enable/End sequence \\
+    Log manager & Records audit events and authorization outcomes \\
+    Device registry & Tracks enrollment state and identifiers \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Programming and Image Load Sequence}
+After authorization succeeds, the host initiates the image programming sequence. The workflow
+supports device connection, image selection, and a controlled load step that writes the
+verified firmware image. This ordering ensures that programming occurs only after the
+authorization gate has been released.
+
+\subsection{Failure Handling}
+If any UART message is missing or out of order, the device transitions to \textsf{HALT} and
+requires a reset before another attempt is allowed. The host logs the failure and prevents
+automatic retries that could mask configuration errors or policy violations.
+
+\section{Implementation Validation and Integration}
+Integration validates that the \texttt{kc} instruction is emitted, preserved, and visible in
+disassembly, and that the authorization sequence produces a deterministic gating decision. The
+validation approach focuses on correctness of the enforcement path and the integrity of the
+toolchain-to-device flow rather than on performance benchmarking.
+
+\subsection{Validation Checklist}
+The following checks are performed during integration:
+\begin{itemize}
+  \item Presence of \texttt{kc} in the compiled binary and in disassembly output.
+  \item Successful ELF$\rightarrow$HEX conversion without opcode loss.
+  \item Correct UART sequence ordering and delimiter handling.
+  \item Gating behavior that enables execution and debug only after a match.
+  \item Deterministic fail-stop behavior on mismatch or protocol error.
+\end{itemize}
+
+\section{Deployment Considerations}
+Deployment requires secure provisioning of the reference key and consistent operator
+procedures. The implementation assumes that enrollment and provisioning are performed by
+authorized personnel and that audit logs are retained for traceability. In field deployments,
+the authorization gate provides a device-resident control point that remains effective even
+when the device is physically accessible.
+
 \section{Summary}
 The implementation integrates a custom ISA instruction, protected key storage, a constant-time
 verifier, and an Authenticator FSM to gate execution and debug access. Toolchain support ensures
 that the authorization primitive is emitted and preserved across the build pipeline, while the
 host workflow provides compilation, inspection, authorization exchange, and programming steps.
 Evaluation results and evidence artifacts are presented in Chapter~5.
+
+\section{Flow Diagram}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/fig_arch_flow.png}
+  \caption{Implementation flow diagram: host workflow, authorization exchange, protected key
+  storage, comparator verification, and ISA-level trigger via \texttt{kc}.}
+  \label{fig:impl-flow}
+\end{figure}
