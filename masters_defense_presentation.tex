@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage[table]{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 \usepackage{fontawesome5}
@@ -57,6 +58,14 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Motivation}
+  \begin{itemize}
+    \item Debug and programming interfaces provide invasive control.
+    \item Host-side policies can be bypassed after reflashing.
+    \item Authorization should be enforced at the device execution model.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{System Overview}
   \begin{columns}[T]
     \column{0.46\textwidth}
@@ -88,7 +97,23 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Related Work}
+\begin{frame}{Literature Review (Summary Table)}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.2}
+  \rowcolors{2}{gray!10}{white}
+  \begin{tabular}{@{}p{0.7cm}p{3.4cm}p{4.4cm}p{3.2cm}@{}}
+    \rowcolor{gray!20}
+    \textbf{Ref.} & \textbf{Area} & \textbf{Representative focus} & \textbf{Gap / Our angle} \\
+    1 & Secure boot & BootROM validation and measured boot chains & Post-boot debug remains open \\
+    2 & Debug/JTAG auth & Interface protection and authentication & Not tied to execution state \\
+    3 & TEEs/minimal TCB & Isolation of trusted code & Debug gating not enforced \\
+    4 & Attestation/CFI & Runtime integrity evidence & Evidence without access control \\
+    5 & Toolchain/ISA & Extensible ISA + compiler support & Needs device-local authorization \\
+  \end{tabular}
+  \vspace{0.6ex}
+  \begin{itemize}
+    \item \textbf{This work:} ISA-triggered, key-gated authorization enforced on-device.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Secure Boot and Boot-Chain Protection}
@@ -157,6 +182,14 @@
 \end{frame}
 
 \begin{frame}{Methodology}
+\end{frame}
+
+\begin{frame}{Threat Model}
+  \begin{itemize}
+    \item Adversary has physical access to the device.
+    \item Attacker can probe debug/program interfaces.
+    \item Goal is to prevent unauthorized execution and debug enablement.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Overall Framework}
@@ -234,6 +267,15 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{Implementation Overview}
+  \begin{itemize}
+    \item ISA integration: decode path emits \texttt{kc\_event}.
+    \item Protected NVM: key not memory-mapped.
+    \item Comparator + FSM: constant-time match and gating.
+    \item Host workflow: compile, authorize, program, log.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Experiments and Results}
 \end{frame}
 
@@ -294,6 +336,14 @@
 \begin{frame}{Conclusion}
 \end{frame}
 
+\begin{frame}{Limitations}
+  \begin{itemize}
+    \item Evaluation emphasizes functional evidence over performance metrics.
+    \item Side-channel and fault-injection resilience not fully quantified.
+    \item Deployment requires formal provisioning and recovery policy.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Conclusion}
   \begin{itemize}
     \item Device-local authorization closes the post-boot gap.
@@ -308,6 +358,14 @@
     \item Key rotation and revocation policies.
     \item Fault and side-channel evaluation.
     \item Formal verification of FSM and toolchain tests.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Figure References}
+  \begin{itemize}
+    \item Architecture diagram and flowchart: this work (device and host workflow).
+    \item Toolchain/HEX/authorization screenshots: generated from the prototype toolchain.
+    \item Debug and programming logs: captured from host application runs.
   \end{itemize}
 \end{frame}
 
