@@ -4,22 +4,97 @@
 \usepackage{cite}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning}
+\usepackage{capt-of}
+\usepackage{dblfloatfix}
+\usepackage{array}
 \usepackage{placeins} % provides \FloatBarrier to stop figure drift across sections
+\usepackage{float} % provides [H] to keep figures in sequence
+
+% Tighter float spacing to reduce white gaps
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{4pt}
 
 % Figures are stored in ./figures
 \graphicspath{{figures/}}
 
 \title{A Novel Approach to Secure Execution in Embedded Systems: Custom ISA and Compiler Binding}
-\author{mariaayub}
+\author{
+\IEEEauthorblockN{Maria Ayub\IEEEauthorrefmark{2},
+Sajid Gul Khawaja\IEEEauthorrefmark{1},
+Asad Mansoor Khan\IEEEauthorrefmark{2},
+Haroon Waris\IEEEauthorrefmark{3}}
+\IEEEauthorblockA{\IEEEauthorrefmark{1} Faculty of Engineering, Abu Dhabi University (ADU), UAE}
+\IEEEauthorblockA{\IEEEauthorrefmark{2} National University of Sciences and Technology (NUST), Islamabad, Pakistan}
+\IEEEauthorblockA{\IEEEauthorrefmark{3} Institute of Space Technology (IST), Islamabad, Pakistan}
+}
 
 \begin{document}
 \maketitle
 
 \section{Abstract}
-% TODO: paste your final abstract here.
+Embedded devices often operate under physical attack where post-boot programming and
+debug interfaces can be abused; secure boot authenticates the initial image but does
+not constrain execution or debug access thereafter. This paper presents a
+hardware--software co-design that enforces device-local authorization as a prerequisite
+for execution and debug enablement by introducing a minimal ISA extension (\texttt{kc})
+that triggers verification against a reference key stored in protected non-volatile
+memory and inaccessible via the architectural load/store path. A constant-time
+comparator and security finite-state machine enforce fail-stop semantics, asserting
+\texttt{exec\_enable} and \texttt{debug\_enable} only upon successful authorization.
+Toolchain support ensures correct emission and preservation of the authorization
+instruction, and a prototype demonstrates end-to-end feasibility and enforcement of the
+intended policy.
+
+Index Terms---embedded systems, debug access control, ISA extensions,
+hardware--software co-design.
 
 \section{Introduction}
-% TODO
+\label{sec:introduction}
+Embedded systems are widely used in critical infrastructure, industrial control, and
+consumer devices. When an attacker gains physical access, many platforms remain
+vulnerable to unauthorized firmware replacement and invasive debugging. Although secure
+boot provides integrity checks for the initial firmware image, it does not necessarily
+restrict post-boot access to programming and debug interfaces. As a result, debug logic
+remains a significant attack surface, exposing memory and execution control that can
+bypass software-level protections.
+
+This work addresses this gap by introducing a device-resident authorization mechanism
+that binds privileged capabilities to an explicit, ISA-visible trigger. Rather than
+treating authorization as a host-side policy, the proposed design integrates
+authorization into the execution model itself. A custom authorization instruction
+invokes a protected verification datapath, ensuring that execution and debug privileges
+are released only after successful device-local verification.
+
+The device stores reference key material in protected non-volatile memory that is not
+accessible through the architectural load/store interface. A constant-time comparator
+and a small security finite-state machine evaluate authorization requests and control
+the \texttt{exec\_enable} and \texttt{debug\_enable} signals. Until authorization
+succeeds, execution and debug access remain disabled, enforcing fail-stop behavior.
+
+On the host side, authorization material is derived from host and device identifiers
+and recorded in a binding database to support traceability and audit. Host tooling
+issues the authorization sequence prior to enabling privileged operations, ensuring
+that access is explicitly granted and verifiable.
+
+This paper makes the following contributions:
+\begin{itemize}
+  \item A minimal ISA extension and hardware control path that enforce instruction-triggered authorization without exposing key material.
+  \item A binding model and host workflow that associate authorization credentials with specific devices and operators.
+  \item An end-to-end toolchain integration and evaluation demonstrating correct instruction emission and enforcement of debug gating through successful authorization.
+\end{itemize}
+
+The remainder of the paper is organized as follows. Section~\ref{sec:relatedwork}
+reviews related work in secure boot, debug protection, and hardware-enforced security.
+Section~\ref{sec:architecture} describes the system architecture and authorization
+dataflow. Section~\ref{sec:results} presents the evaluation and validation results.
+Section~\ref{sec:discussion} discusses security implications and operational
+considerations, Section~\ref{sec:futurework} outlines future directions, and
+Section~\ref{sec:conclusion} concludes.
 
 \input{paper/RELATED_WORK.tex}
 
