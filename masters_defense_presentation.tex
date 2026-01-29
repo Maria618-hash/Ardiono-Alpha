@@ -5,6 +5,9 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{fontawesome5}
 
 % Figures are stored in ./figures
 \graphicspath{{figures/}}
@@ -25,14 +28,24 @@
 \end{frame}
 
 \begin{frame}{Outline}
-  \begin{itemize}
-    \item Motivation and problem
-    \item Related work
-    \item Methodology
-    \item Implementation
-    \item Experiments and results
-    \item Conclusion and future work
-  \end{itemize}
+  \centering
+  \tikzset{
+    outlinebox/.style={
+      fill=gray!20,
+      rounded corners=2pt,
+      minimum width=0.95\textwidth,
+      text width=0.9\textwidth,
+      inner ysep=6pt,
+      align=left
+    }
+  }
+  \begin{tikzpicture}[node distance=6mm]
+    \node (a) [outlinebox] {\faThumbsUp\hspace{0.6em} Introduction};
+    \node (b) [outlinebox, below=of a] {\faBook\hspace{0.6em} Literature Review};
+    \node (c) [outlinebox, below=of b] {\faPencilAlt\hspace{0.6em} Methodology};
+    \node (d) [outlinebox, below=of c] {\faClock\hspace{0.6em} Experiments and Results};
+    \node (e) [outlinebox, below=of d] {\faChartLine\hspace{0.6em} Conclusion};
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Introduction}
